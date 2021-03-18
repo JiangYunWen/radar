@@ -1,0 +1,519 @@
+<template>
+  <div>
+    <div class="crumbs">
+      <el-breadcrumb separator="/">
+        <el-breadcrumb-item>
+          <i class="el-icon-lx-cascades"></i> 门限管理
+        </el-breadcrumb-item>
+      </el-breadcrumb>
+    </div>
+    <div class="container">
+      <div class="handle-box">
+        <el-button class="handle-add mr10" @click="addFile"
+          ><i
+            class="el-icon-circle-plus"
+            style="font-size: 12px; color: #00ec00; margin-right: 5px"
+          ></i
+          >增加</el-button
+        >
+        <!-- <el-select v-model="query.address" placeholder="地址" class="handle-select mr10">
+                    <el-option key="1" label="广东省" value="广东省"></el-option>
+                    <el-option key="2" label="湖南省" value="湖南省"></el-option>
+                </el-select> -->
+        <el-input
+          v-model="query.keyname"
+          placeholder="键名称"
+          class="handle-input mr10"
+        ></el-input>
+        <el-button @click="handleSearch"
+          ><i
+            class="el-icon-search"
+            style="font-size: 12px; color: blue; margin-right: 5px"
+          ></i
+          >搜索</el-button
+        >
+      </div>
+      <el-table
+        :data="tableData1"
+        border
+        class="table"
+        ref="multipleTable"
+        header-cell-class-name="table-header"
+        @selection-change="handleSelectionChange"
+      >
+        <el-table-column type="selection" width="55" align="center"></el-table-column>
+        <el-table-column prop="subtype" label="设备类型">
+          <template slot-scope="scope">
+            <span v-if="scope.row.subtype === 0">机箱</span>
+            <span v-if="scope.row.subtype === 1">低功耗计算刀片</span>
+            <span v-else-if="scope.row.subtype === 2">高性能计算刀片</span>
+            <span v-else-if="scope.row.subtype === 3">40G交换刀片</span>
+            <span v-else-if="scope.row.subtype === 4">SRIO交换刀片</span>
+            <span v-else-if="scope.row.subtype === 5">电源刀片</span>
+            <span v-else-if="scope.row.subtype === 6">风机刀片</span>
+            <span v-else-if="scope.row.subtype === 7">记录刀片</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="keyname" label="键名称" :formatter="formatter">
+        </el-table-column>
+        <el-table-column prop="valuemin" label="最小值"></el-table-column>
+        <el-table-column prop="valuemax" label="最大值"></el-table-column>
+        <el-table-column prop="status" label="状态" align="center">
+          <template slot-scope="scope">
+            <el-switch v-model="scope.row.status"></el-switch>
+          </template>
+        </el-table-column>
+        <el-table-column prop="createTime" label="上传时间"></el-table-column>
+        <el-table-column prop="editTime" label="修改时间" align="center">
+          <!-- <template slot-scope="scope">
+                        <el-tag
+                            :type="scope.row.state==='成功'?'success':(scope.row.state==='失败'?'danger':'')"
+                        >{{scope.row.state}}</el-tag>
+                    </template> -->
+        </el-table-column>
+
+        <el-table-column label="操作" width="180" align="center">
+          <template slot-scope="scope">
+            <el-button
+              type="text"
+              icon="el-icon-edit"
+              @click="handleEdit(scope.$index, scope.row)"
+              >编辑</el-button
+            >
+            <el-button
+              type="text"
+              icon="el-icon-delete"
+              class="red"
+              @click="handleDelete(scope.$index, scope.row)"
+              >删除</el-button
+            >
+          </template>
+        </el-table-column>
+      </el-table>
+      <div class="pagination">
+        <el-pagination
+          @size-change="changeSizeHandle"
+          @current-change="currentChangeHandle"
+          :current-page="query.pageIndex"
+          layout="total, sizes, prev, pager, next, jumper"
+          :total="query.pageTotal"
+          background
+        >
+        </el-pagination>
+      </div>
+    </div>
+
+    <!-- 编辑弹出框 -->
+    <el-dialog title="编辑用户" :visible.sync="editVisible" width="30%">
+      <el-form
+        ref="form"
+        :model="form"
+        label-width="100px"
+        style="width: 300px; margin-left: 50px"
+      >
+        <el-form-item label="设备类型">
+          <el-select v-model="form.subtype" placeholder="请选择" @change="getkeyname()">
+            <el-option
+              v-for="item in options"
+              :key="item.code"
+              :label="item.value"
+              :value="item.code"
+            >
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="键名称">
+          <el-select v-model="form.keyname" placeholder="请选择">
+            <el-option
+              v-for="item in keynamedata"
+              :key="item.keyname"
+              :label="item.name"
+              :value="item.keyname"
+            >
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="最小值">
+          <el-input v-model="form.valuemin"></el-input>
+        </el-form-item>
+        <el-form-item label="最大值">
+          <el-input v-model="form.valuemax"></el-input>
+        </el-form-item>
+        <el-form-item label="状态">
+          <template>
+            <el-switch v-model="form.status"></el-switch>
+          </template>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="editVisible = false">取 消</el-button>
+        <el-button type="primary" @click="saveEdit">确 定</el-button>
+      </span>
+    </el-dialog>
+
+    <!--用户增加弹出框-->
+    <el-dialog title="增加门限 " :visible.sync="addVisible" width="30%">
+      <el-form
+        ref="form"
+        :model="user"
+        label-width="100px"
+        style="width: 300px; margin-left: 50px"
+      >
+        <el-form-item label="设备类型">
+          <el-select v-model="user.subtype" placeholder="请选择" @change="getkeyname()">
+            <el-option
+              v-for="item in options"
+              :key="item.code"
+              :label="item.value"
+              :value="item.code"
+            >
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="键名称">
+          <el-select v-model="user.keyname" placeholder="请选择">
+            <el-option
+              v-for="item in keynamedata"
+              :key="item.keyname"
+              :label="item.name"
+              :value="item.keyname"
+            >
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="最小值">
+          <el-input v-model="user.valuemin"></el-input>
+        </el-form-item>
+        <el-form-item label="最大值">
+          <el-input v-model="user.valuemax"></el-input>
+        </el-form-item>
+        <el-form-item label="状态">
+          <template>
+            <el-switch
+              v-model="user.status"
+              :active-value="true"
+              :inactive-value="false"
+            ></el-switch>
+          </template>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="addVisible = false">取 消</el-button>
+        <el-button type="primary" @click="saveAdd">确 定</el-button>
+      </span>
+    </el-dialog>
+  </div>
+</template>
+
+<script>
+// import { fetchData } from '../../api/index';
+export default {
+  name: "basetable",
+  data() {
+    return {
+      query: {
+        limit: 10,
+        pageIndex: 1,
+        pageSize: 10,
+        pageTotal: 0,
+        keyname: "",
+      },
+      tableData1: [],
+      multipleSelection: [],
+      delList: [],
+      editVisible: false,
+      addVisible: false,
+      user: {
+        subtype: "",
+        keyname: "",
+        valuemin: 0,
+        valuemax: 0,
+        status: true,
+      },
+
+      form: {},
+      idx: -1,
+      id: -1,
+      options: [],
+      keynamedata: [],
+    };
+  },
+  created() {
+    this.getData();
+  },
+  methods: {
+    // 获取 easy-mock 的模拟数据
+    getData() {
+      this.$axios({
+        method: "post",
+        url: "/sys/threshord/listData",
+        data: JSON.stringify({
+          page: this.query.pageIndex,
+          limit: this.query.pageSize,
+          keyname: this.query.keyname,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      })
+        .then((res) => {
+          if (res.data.code == 0) {
+            this.tableData1 = res.data.page.list;
+            this.getkeyname1(res.data.page.list);
+            this.query.pageTotal = res.data.page.total || 10; //1页数据
+            this.query.pageIndex = res.data.page.page; //当前页
+            this.query.pageSize = res.data.page.limit; //数据总数
+          } else {
+            this.$message.error(res.data.msg);
+          }
+        })
+        .catch((error) => {
+          this.$message.error("获取数据失败！");
+        });
+    },
+    formatter(row, colum) {
+      for (var su in this.keynamedata) {
+        if (row.keyname === this.keynamedata[su].keyname) {
+          return this.keynamedata[su].name;
+        }
+      }
+    },
+    getkeyname1(list) {
+      for (var s in list) {
+        console.log("list", list[s].subtype);
+        this.$axios({
+          method: "get",
+          url: "/sys/threshord/suppert/" + list[s].subtype,
+          withCredentials: true,
+        })
+          .then((res) => {
+            console.log("res", res.data);
+            if (res.data.code == 0) {
+              this.keynamedata = res.data.data;
+            } else {
+              this.$message.error(res.data.msg);
+            }
+          })
+          .catch((error) => {
+            this.$message.error("获取数据失败！");
+          });
+      }
+    },
+    // 触发搜索按钮
+    handleSearch() {
+      this.getData();
+    },
+    // 删除操作
+    handleDelete(index, row) {
+      this.id = row.id;
+
+      // 二次确认删除
+      this.$confirm("确定要删除吗？", "提示", {
+        type: "warning",
+      })
+        .then(() => {
+          this.saveDelete();
+        })
+        .catch(() => {});
+    },
+    saveDelete() {
+      let ids = [];
+      ids.push(this.id + "");
+      console.log(ids);
+      this.$axios({
+        method: "post",
+        url: "/sys/threshord/delete",
+        data: JSON.stringify(ids),
+        // 设置请求头
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true, //跨域请求
+      })
+        .then((res) => {
+          let data = res.data;
+          if (data.code == 0) {
+            this.$message.success("操作完成");
+            this.getData(); //局部刷新表格
+          } else {
+            this.$message.error(data.msg || "操作失败");
+          }
+        })
+        .catch((e) => {
+          this.$message.error(e);
+        });
+    },
+    // 多选操作
+    handleSelectionChange(val) {
+      this.multipleSelection = val;
+    },
+    delAllSelection() {
+      const length = this.multipleSelection.length;
+      let str = [];
+      this.delList = this.delList.concat(this.multipleSelection);
+
+      for (let i = 0; i < this.delList.length; i++) {
+        str.push(this.delList[i].id + "");
+      }
+      this.saveDelete(str);
+      this.multipleSelection = [];
+    },
+    addFile() {
+      this.addVisible = true;
+      this.getEnmu();
+    },
+    saveAdd() {
+      this.addVisible = false;
+      this.$axios({
+        method: "POST",
+        url: "/sys/threshord/save",
+        data: JSON.stringify(this.user),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      })
+        .then((res) => {
+          let data = res.data;
+          if (data.code == 0) {
+            this.$message.success("操作完成");
+            this.getData(); //局部刷新表格
+          } else {
+            this.$message.error(data.msg || "操作失败");
+          }
+          this.uploadLoading = false;
+        })
+        .catch((e) => {
+          this.uploadLoading = false;
+          this.$message.error(e);
+        });
+    },
+    // 编辑操作
+    handleEdit(index, row) {
+      this.idx = index;
+      this.form = row;
+
+      this.id = row.id;
+      this.editVisible = true;
+      this.getEnmu();
+    },
+    // 保存编辑
+    saveEdit() {
+      this.editVisible = false;
+      // 文件上传
+      this.$axios({
+        method: "POST",
+        url: "/sys/threshord/update",
+        data: JSON.stringify(this.form),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      })
+        .then((res) => {
+          let data = res.data;
+          if (data.code == 0) {
+            // this.$message.success('操作完成') ;
+            this.$message.success(`修改第 ${this.idx + 1} 行成功`);
+            this.getData(); //局部刷新表格
+          } else {
+            this.$message.error(data.msg || "操作失败");
+          }
+        })
+        .catch((e) => {
+          this.$message.error(e);
+        });
+      // this.$message.success(`修改第 ${this.idx + 1} 行成功`);
+      // this.$set(this.tableData, this.idx, this.form);
+    },
+    //获取设备类型
+    getEnmu() {
+      this.$axios({
+        method: "get",
+        url: "/getData/getEnum?enumName=BladeEnum",
+        withCredentials: true,
+      })
+        .then((res) => {
+          console.log("res", res.data);
+          if (res.data.code == 0) {
+            this.options = res.data.data;
+          } else {
+            this.$message.error(res.data.msg);
+          }
+        })
+        .catch((error) => {
+          this.$message.error("获取数据失败！");
+        });
+    },
+    getkeyname() {
+      this.$axios({
+        method: "get",
+        url: "/sys/threshord/suppert/" + this.user.subtype,
+        withCredentials: true,
+      })
+        .then((res) => {
+          console.log("res", res.data);
+          if (res.data.code == 0) {
+            this.keynamedata = res.data.data;
+          } else {
+            this.$message.error(res.data.msg);
+          }
+        })
+        .catch((error) => {
+          this.$message.error("获取数据失败！");
+        });
+    },
+    // 分页导航
+    // 每页显示的条数改变
+    changeSizeHandle(val) {
+      this.query.pageSize = val; // 改变每页显示的条数
+      this.query.pageIndex = 1; // 注意：在改变每页显示的条数时，要将页码显示到第一页
+      this.getData(); // 点击每页显示的条数时，显示第一页
+      console.log(`每页 ${val} 条`);
+    },
+
+    // current-change用于监听页数改变，而内容也发生改变
+    currentChangeHandle(val) {
+      this.query.pageIndex = val; // 改变默认的页数
+      this.getData(); // 切换页码时，要获取每页显示的条数
+      console.log(`当前页: ${val}`);
+    },
+  },
+};
+</script>
+
+<style scoped>
+.handle-box {
+  margin-bottom: 10px;
+}
+
+.handle-select {
+  width: 120px;
+}
+
+.handle-input {
+  width: 200px;
+  display: inline-block;
+}
+
+.table {
+  width: 100%;
+  font-size: 14px;
+}
+
+.red {
+  color: #ff0000;
+}
+
+.mr10 {
+  margin-right: 10px;
+}
+
+.table-td-thumb {
+  display: block;
+  margin: auto;
+  width: 40px;
+  height: 40px;
+}
+</style>

@@ -1,0 +1,30 @@
+const webpack=require('webpack')
+module.exports = {
+    baseUrl: './',
+    assetsDir: 'static',
+    productionSourceMap: false,
+    devServer: {
+        proxy: {
+            '/api':{
+                // target:'127.0.0.1:8181',
+                target:'192.168.152.254:8080',
+                changeOrigin:true,
+                pathRewrite:{
+                    '^/api':''
+                }
+            }
+        },
+        // host:'0.0.0.0',
+        // prot:8080
+    },
+    configureWebpack: {
+           plugins: [       
+              new webpack.ProvidePlugin({       
+                $:"jquery",       
+                jQuery:"jquery",       
+                jquery:"jquery",       
+                "windows.jQuery":"jquery"      
+              })        
+            ]        
+        }
+}

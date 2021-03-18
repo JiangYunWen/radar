@@ -1,0 +1,275 @@
+<template>
+  <div>
+    <div class="crumbs">
+      <el-breadcrumb separator="/">
+        <el-breadcrumb-item>
+          <i class="el-icon-lx-cascades"></i> 平台日志
+        </el-breadcrumb-item>
+      </el-breadcrumb>
+    </div>
+    <div class="container">
+      <div class="handle-box">
+        <el-button type="danger" @click="delAllSelection"
+          ><i class="el-icon-delete" style="font-size: 12px; margin-right: 5px"></i
+          >批量删除</el-button
+        >
+        <el-button type="primary" @click="exportExcel"
+          ><i class="el-icon-position" style="font-size: 12px; margin-right: 5px"></i
+          >导出Execl</el-button
+        >
+      </div>
+
+      <el-table
+        :data="tableData1"
+        border
+        class="table"
+        ref="multipleTable"
+        header-cell-class-name="table-header"
+        @selection-change="handleSelectionChange"
+      >
+        <el-table-column type="selection" width="55" align="center"></el-table-column>
+        <el-table-column prop="id" label="ID" width="55" align="center"></el-table-column>
+        <el-table-column prop="username" label="用户名称"></el-table-column>
+        <el-table-column prop="operation" label="操作"></el-table-column>
+        <el-table-column prop="method" label="API接口" width="200"></el-table-column>
+        <el-table-column
+          prop="params"
+          label="参数"
+          align="center"
+          width="250"
+        ></el-table-column>
+        <el-table-column prop="ip" label="IP" align="center"></el-table-column>
+        <el-table-column prop="createTime" label="上传时间"></el-table-column>
+        <el-table-column prop="editTime" label="修改时间" align="center">
+        </el-table-column>
+
+        <el-table-column label="操作" width="180" align="center">
+          <template slot-scope="scope">
+            <el-button
+              type="text"
+              icon="el-icon-delete"
+              class="red"
+              @click="handleDelete(scope.$index, scope.row)"
+              >删除</el-button
+            >
+          </template>
+        </el-table-column>
+      </el-table>
+      <!--分页组件-->
+      <pagination :query1="query" />
+    </div>
+  </div>
+</template>
+
+<script>
+import pagination from "@/components/utils/pagination";
+export default {
+  components: {
+    pagination,
+  },
+  data() {
+    return {
+      query: {
+        // url: '',
+        fileName: "",
+        limit: 10,
+        pageIndex: 1,
+        pageSize: 10,
+        pageTotal: 0,
+      },
+      tableData1: [],
+      multipleSelection: [],
+      delList: [],
+      editVisible: false,
+      addVisible: false,
+      file: {
+        fileName: "",
+        url: "",
+      },
+      pageTotal: 0,
+      form: {},
+      idx: -1,
+      id: -1,
+    };
+  },
+  mounted() {
+    this.getData();
+  },
+  methods: {
+    exportExcel() {
+      /* generate workbook object from table */
+      let wb = XLSX.utils.table_to_book(document.querySelector(".table"));
+      /* get binary string as output */
+      let wbout = XLSX.write(wb, {
+        bookType: "xlsx",
+        bookSST: true,
+        type: "array",
+      });
+      try {
+        FileSaver.saveAs(
+          new Blob([wbout], {
+            type: "application/octet-stream",
+          }),
+          "系统日志.xlsx"
+        );
+      } catch (e) {
+        if (typeof console !== "undefined") console.log(e, wbout);
+      }
+      return wbout;
+    },
+    // 获取 easy-mock 的模拟数据
+    getData() {
+      console.log("page", this.query);
+      this.$axios({
+        method: "post",
+        url: "/sys/log/listData",
+        data: JSON.stringify({
+          page: this.query.pageIndex,
+          limit: this.query.pageSize,
+          grade: this.query.grade,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      })
+        .then((res) => {
+          if (res.data.code == 0) {
+            this.tableData1 = res.data.page.list;
+            this.query.pageTotal = res.data.page.total || 10; //1页数据
+            this.query.pageIndex = res.data.page.page; //当前页
+            this.query.pageSize = res.data.page.limit; //数据总数
+          } else {
+            this.$message.error(res.data.msg);
+          }
+        })
+        .catch((error) => {
+          this.$message.error("获取数据失败！");
+        });
+    },
+    // 触发搜索按钮
+    handleSearch() {
+      console.log(this.query);
+      this.$set(this.query, "pageIndex", 1);
+      this.getData();
+    },
+    // 删除操作
+    handleDelete(index, row) {
+      this.id = row.id;
+      // 二次确认删除
+      this.$confirm("确定要删除吗？", "提示", {
+        type: "warning",
+      })
+        .then(() => {
+          this.saveDelete();
+          // this.$message.success('删除成功');
+          // this.tableData.splice(index, 1);
+        })
+        .catch(() => {});
+    },
+    saveDelete() {
+      let ids = [];
+      ids.push(this.id + "");
+      console.log(ids);
+      this.$axios({
+        method: "POST",
+        url: "/sys/log/delete",
+        data: JSON.stringify(ids),
+        // 设置请求头
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true, //跨域请求
+      })
+        .then((res) => {
+          let data = res.data;
+          if (data.code == 0) {
+            this.$message.success("操作完成");
+            this.getData(); //局部刷新表格
+          } else {
+            this.$message.error(data.msg || "操作失败");
+          }
+        })
+        .catch((e) => {
+          this.$message.error(e);
+        });
+    },
+    // 多选操作
+    handleSelectionChange(val) {
+      this.multipleSelection = val;
+    },
+    delAllSelection() {
+      const length = this.multipleSelection.length;
+      let str = [];
+      this.delList = this.delList.concat(this.multipleSelection);
+      //同时确认多个
+      for (let i = 0; i < this.delList.length; i++) {
+        str.push(this.delList[i].id + "");
+      }
+
+      this.$confirm("是否清除数据？", "提示", {
+        type: "warning",
+      })
+        .then(() => {
+          this.saveDelete();
+          this.multipleSelection = [];
+          // this.$message.success('删除成功');
+          // this.tableData.splice(index, 1);
+        })
+        .catch(() => {});
+    },
+    //文件上传
+    // addFile() {
+    //     this.addVisible = true;
+    // },
+    // 分页导航
+    // handlePageChange(val) {
+    //     console.log(val);
+    //     this.$set(this.query, 'pageIndex', val);
+
+    //     this.getData(val);
+    // }
+  },
+};
+</script>
+
+<style scoped>
+.handle-box {
+  margin-bottom: 20px;
+}
+
+.box {
+  /* margin-bottom: 20px; */
+  position: relative;
+  left: 68%;
+}
+
+.handle-select {
+  width: 120px;
+}
+
+.handle-input {
+  width: 300px;
+  display: inline-block;
+}
+
+.table {
+  width: 100%;
+  font-size: 14px;
+}
+
+.red {
+  color: #ff0000;
+}
+
+.mr10 {
+  margin-right: 10px;
+}
+
+.table-td-thumb {
+  display: block;
+  margin: auto;
+  width: 40px;
+  height: 40px;
+}
+</style>

@@ -1,0 +1,573 @@
+<template>
+    <el-col :span="24">
+        <el-row :gutter="24">
+            <el-col :span="24">
+                <el-card shadow="hover" :body-style="{padding: '0px'}">
+                    <div slot="header" class="clearfix">
+                        <h2>物理拓扑视图</h2>
+                    </div>
+                    <div id="myDiagramDiv"
+                        style="border: 1px solid black; width: 99%; height: 700px; position: relative; -webkit-tap-highlight-color: rgba(255, 255, 255, 0);">
+                    </div>
+                </el-card>
+            </el-col>
+        </el-row>
+    </el-col>
+</template>
+
+<script>
+    import { fetchData } from '../../api/index';
+    export default {
+        data() {
+            return {
+                configData: [],
+                progressData: [],
+                nodeDataArray: [],
+                linkDataArray: []
+            }
+        },
+        methods: {
+            // 获取 easy-mock 的模拟数据
+            getData() {
+                fetchData(this.query).then(res => {
+
+                    //连线
+                    var links = [];
+                    for (var l = 0; l < res.SoltsLinks.length; l++) {
+                        var link = {};
+                        link["from"] = res.SoltsLinks[l].from;
+                        link["to"] = res.SoltsLinks[l].to;
+                        link["category"] = res.SoltsLinks[l].category;
+                        link["fromSpot"] = res.SoltsLinks[l].fromSpot;
+                        link["toSpot"] = res.SoltsLinks[l].toSpot;
+                        links.push(link);
+                    }
+                    this.linkDataArray = links;
+                    console.log('this.linkDataArray', this.linkDataArray);
+
+                    //节点
+                    var solts = [];
+                    for (var i = 0; i < res.OnlineSolts.length; i++) {
+                        //首先第一个大组
+                        var group1 = {};
+                        group1["isGroup"] = true;
+                        group1["key"] = res.OnlineSolts[i].key;
+                        group1["subtype"] = res.OnlineSolts[i].subtype;
+                        group1["text"] = res.OnlineSolts[i].text;
+                        group1["category"] = res.OnlineSolts[i].category;
+                        group1["size"] = res.OnlineSolts[i].size;
+                        solts.push(group1);
+
+                        var Group = res.OnlineSolts[i].Group.length;
+                        //第二层组
+                        for (var j = 0; j < Group; j++) {
+                            var group2 = {};
+                            group2["key"] = res.OnlineSolts[i].Group[j].key;
+                            group2["group"] = res.OnlineSolts[i].Group[j].group;
+                            group2["isGroup"] = true;
+                            group2["category"] = res.OnlineSolts[i].Group[j].category;
+                            group2["pos"] = res.OnlineSolts[i].Group[j].pos;
+                            group2["text"] = res.OnlineSolts[i].Group[j].text;
+                            group2["size"] = res.OnlineSolts[i].Group[j].size;
+                            solts.push(group2);
+
+                            var model = res.OnlineSolts[i].Group[j].Chips.length;
+                            //第三层模块
+                            if (model > 0) {
+                                for (var m = 0; m < model; m++) {
+                                    var models = {};
+                                    models["key"] = res.OnlineSolts[i].Group[j].Chips[m].key;
+                                    models["text"] = res.OnlineSolts[i].Group[j].Chips[m].text;
+                                    models["group"] = res.OnlineSolts[i].Group[j].Chips[m].group;
+                                    models["category"] = res.OnlineSolts[i].Group[j].Chips[m].category;
+                                    models["pos"] = res.OnlineSolts[i].Group[j].Chips[m].pos;
+                                    models["ribbon"] = res.OnlineSolts[i].Group[j].Chips[m].ribbon;
+                                    models["ribbon1"] = res.OnlineSolts[i].Group[j].Chips[m].ribbon1;
+                                    models["color"] = res.OnlineSolts[i].Group[j].Chips[m].color;
+
+                                    solts.push(models);
+                                }
+                            }
+                        }
+                    }
+
+                    this.nodeDataArray = solts;
+                    this.setTopo();
+                });
+            },
+            setTopo() {
+                if (window.goSamples) goSamples(); // init for these samples -- you don't need to call this
+                var $ = go.GraphObject.make; // for conciseness in defining templates
+                var myDiagram =
+                    $(go.Diagram, "myDiagramDiv", // Diagram refers to its DIV HTML element by id
+                        {
+                            maxSelectionCount: 1, // no more than 1 element can be selected at a time
+                            allowHorizontalScroll: true, // disallow scrolling or panning
+                            allowVerticalScroll: true,
+                            allowZoom: true, // disallow zooming
+                            allowMove: false,
+                            "animationManager.isEnabled": false,
+                            "undoManager.isEnabled": false,
+                            scale: 0.4,    //初始视图大小比例
+                        });
+                // the background Part showing the fixed bounds of the diagram contents
+                //   myDiagram.add(
+                //     $(go.Part,
+                //       { layerName: "Horizontal", position: myDiagram.fixedBounds.position },
+                //       $(go.Shape, { fill: "oldlace", strokeWidth: 0, desiredSize: myDiagram.fixedBounds.size })
+                //     ));
+
+                // this function is the Node.dragComputation, to limit the movement of the parts
+                // use GRIDPT instead of PT if DraggingTool.isGridSnapEnabled and movement should snap to grid
+                function stayInFixedArea(part, pt, gridpt) {
+                    var diagram = part.diagram;
+                    if (diagram === null) return pt;
+                    // compute the document area without padding
+                    var v = diagram.documentBounds.copy();
+                    v.subtractMargin(diagram.padding);
+                    // get the bounds of the part being dragged
+                    var b = part.actualBounds;
+                    var loc = part.location;
+                    // now limit the location appropriately
+                    var x = Math.max(v.x, Math.min(pt.x, v.right - b.width)) + (loc.x - b.x);
+                    var y = Math.max(v.y, Math.min(pt.y, v.bottom - b.height)) + (loc.y - b.y);
+                    return new go.Point(x, y);
+                }
+                myDiagram.nodeTemplateMap.add("Rectangle",
+                    $(go.Node, "Spot", {
+                        avoidable: true
+                    }, {
+                        dragComputation: stayInFixedArea
+                    },
+                        // get the size from the model data
+                        new go.Binding("desiredSize", "size", go.Size.parse),
+                        // get and set the position in the model data
+                        new go.Binding("position", "pos", go.Point.parse).makeTwoWay(go.Point.stringify),
+
+                        $(go.Panel, "Auto", {
+                            name: "",
+                            width: 75,
+                            height: 75
+                        },
+                            // { portId: "" },
+                            // { position: new go.Point(50, 50), background: "" },
+                            $(go.Shape, {
+                                fill: "white",
+                                stroke: null,
+                                strokeWidth: 0
+                            }),
+                            $(go.TextBlock,
+                                new go.Binding("text", "text"), {
+                                width: 90,
+                                textAlign: "center"
+                            })
+                        ),
+                        //黑块小三角
+                        $(go.Panel, "Spot",
+                            new go.Binding("opacity", "ribbon", function (t) {
+                                return t ? 1 : 0;
+                            }),
+                            // note that the opacity defaults to zero (not visible),
+                            // in case there is no "ribbon" property
+                            {
+                                opacity: 0,
+                                alignment: new go.Spot(1, 0, 0, 0),
+                                alignmentFocus: go.Spot.TopRight
+                            },
+                            $(go.Shape, // the ribbon itself
+                                {
+                                    geometryString: "F1 M0 0 L50 0 50 50 50 50z",
+                                    fill: "black",
+                                    stroke: null,
+                                    strokeWidth: 0
+                                }),
+                            $(go.TextBlock,
+                                new go.Binding("text", "ribbon"), {
+                                alignment: new go.Spot(1, 0, -20, 15),
+                                angle: 45,
+                                maxSize: new go.Size(100, NaN),
+                                stroke: "white",
+                                font: "bold 13px sans-serif",
+                                textAlign: "center"
+                            })
+                        ),
+
+                        //cpu占用
+                        $(go.Panel, "Spot",
+                            new go.Binding("opacity", "ribbon1", function (t) {
+                                return t ? 1 : 0;
+                            }),
+                            // note that the opacity defaults to zero (not visible),
+                            // in case there is no "ribbon" property
+                            {
+                                opacity: 0,
+                                alignment: new go.Spot(1, 0.7, 0, 0),
+                                alignmentFocus: go.Spot.TopRight
+                            },
+                            $(go.Shape,
+                                new go.Binding("fill", "color"), {
+                                geometryString: "F10 M25 25 L25 0 100 0 100 25z",
+                                fill: "green",
+                                stroke: null,
+                                strokeWidth: 0
+                            }
+                            ),
+                            $(go.TextBlock,
+                                new go.Binding("text", "ribbon1", function (t) {
+                                    return t + "%";
+                                }), {
+                                angle: 0,
+                                maxSize: new go.Size(100, NaN),
+                                stroke: "white",
+                                font: "bold 13px sans-serif",
+                                textAlign: "center"
+                            })
+                        )
+                    )
+                );
+
+                //串口
+                myDiagram.nodeTemplateMap.add("ManualOperation",
+                    $(go.Node, "Spot",
+                        // new go.Binding("location", "loc"),
+                        {
+                            locationSpot: go.Spot.Center,
+                            locationObjectName: "BODY",
+                            toEndSegmentLength: 30,
+                            fromEndSegmentLength: 30
+                        }, {
+                        selectionObjectName: "BODY"
+                    },
+
+                        $(go.Panel, "Auto", {
+                            name: "BODY",
+                            width: 70,
+                            height: 30
+                        },
+                            // { portId: "" },
+                            // { position: new go.Point(-50, 50), background: "lightgreen" },
+                            $(go.Shape, "ManualOperation", {
+                                fill: "white",
+                                stroke: null,
+                                strokeWidth: 0
+                            }),
+                            $(go.TextBlock,
+                                new go.Binding("text", "text"), {
+                                width: 90,
+                                textAlign: "center"
+                            })
+                        ),
+                    )
+                );
+
+                //以太网
+                myDiagram.nodeTemplateMap.add("Srio",
+                    $(go.Node, "Spot",
+                        $(go.Panel, "Auto", {
+                            name: "BODY",
+                            width: 60,
+                            height: 60
+                        }, {
+                            portId: ""
+                        }, {
+                            position: new go.Point(-50, 50),
+                            background: "black"
+                        },
+                            $(go.Shape, "DividedEvent", {
+                                fill: "white",
+                                stroke: null,
+                                strokeWidth: 0
+                            }),
+                            $(go.TextBlock,
+                                new go.Binding("text", "text"), {
+                                width: 90,
+                                textAlign: "center"
+                            })
+                        ),
+                    )
+                );
+
+                //40G或SRIO
+                myDiagram.nodeTemplateMap.add("StopSign",
+                    $(go.Node, "Spot", {
+                        dragComputation: stayInFixedArea
+                    },
+                        new go.Binding("desiredSize", "size", go.Size.parse),
+                        // get and set the position in the model data
+                        new go.Binding("position", "pos", go.Point.parse),
+                        $(go.Panel, "Auto", {
+                            name: "BODY",
+                            width: 72,
+                            height: 72
+                        },
+                            // { portId: "" },
+                            // { position: new go.Point(-50, 50), background: "lightgreen" },
+                            $(go.Shape, "StopSign", {
+                                fill: "white",
+                                stroke: null,
+                                strokeWidth: 0
+                            }),
+                            $(go.TextBlock,
+                                new go.Binding("text", "text"), {
+                                width: 70,
+                                textAlign: "center"
+                            })
+                        ),
+                    )
+                );
+
+                myDiagram.groupTemplateMap.add("test", $(go.Group, "Auto", {
+
+                },
+                    // declare the Group.layout:
+                    {
+                        dragComputation: stayInFixedArea
+                    },
+                    new go.Binding("desiredSize", "size", go.Size.parse),
+                    new go.Binding("position", "pos", go.Point.parse),
+                    $(go.Shape, "Rectangle", // surrounds everything
+                        {
+                            parameter1: 10,
+                            fill: "rgba(128,128,128,0.33)"
+                        }
+                    ),
+                    $(go.Panel, "Auto", {
+                        width: 400,
+                        height: 0
+                    }, // position header above the subgraph
+                        $(go.TextBlock, // group title near top, next to button
+                            new go.Binding("text", "text"), {
+                            font: "Bold 12pt Sans-Serif",
+                            textAlign: "Bottom",
+                            width: 60,
+                            wrap: go.TextBlock.WrapDesiredSize
+                        }),
+                        // $(go.Placeholder, // represents area for all member parts
+                        // )
+                    )
+                ));
+
+                //多个组模板定义,"OfGroup1"为组模板的分类,在json用category指定组使用的模板
+                myDiagram.groupTemplateMap.add("OfGroup1", $(go.Group, "Auto",
+                    // declare the Group.layout:
+                    {
+                        dragComputation: stayInFixedArea
+                    },
+                    new go.Binding("desiredSize", "size", go.Size.parse),
+                    // get and set the position in the model data
+                    // new go.Binding("position", "pos", go.Point.parse),
+                    //   { layout: $(go.GridLayout,{
+                    //      arrangement: ''
+                    //   }) },
+                    $(go.Shape, "Rectangle", // surrounds everything
+                        {
+                            parameter1: 10,
+                            fill: "rgba(128,128,128,0.33)"
+                        }
+                    ),
+                    $(go.Panel, "Auto", {
+
+                    }, // position header above the subgraph
+                        $(go.TextBlock, // group title near top, next to button
+                            new go.Binding("text", "text"), {
+                            font: "Bold 12pt Sans-Serif",
+                            textAlign: "left"
+                        }),
+                        $(go.Placeholder, // represents area for all member parts
+                            {
+                                padding: 5,
+                            })
+                    )
+                ));
+
+                myDiagram.groupTemplateMap.add("OfGroup2", $(go.Group, "Auto",
+                    // declare the Group.layout:
+                    {
+                        layout: $(go.LayeredDigraphLayout, {})
+                    }, {
+                    dragComputation: stayInFixedArea
+                },
+                    new go.Binding("desiredSize", "size", go.Size.parse),
+                    // get and set the position in the model data
+                    new go.Binding("position", "pos", go.Point.parse),
+                    $(go.Shape, "Rectangle", // surrounds everything
+                        {
+                            parameter1: 10,
+                            fill: "rgba(128,128,128,0.33)"
+                        }
+                    ),
+                    $(go.Panel, "Auto", {
+                        width: 150,
+                        height: 180
+                    }, // position header above the subgraph
+                        $(go.TextBlock, // group title near top, next to button
+                            {
+                                font: "Bold 12pt Sans-Serif"
+                            },
+                            new go.Binding("text", "text")),
+                        $(go.Placeholder, // represents area for all member parts
+                            {
+                                padding: 5,
+                            })
+                    )
+                ));
+
+                myDiagram.groupTemplateMap.add("OfGroup3", $(go.Group, "Auto",
+                    // declare the Group.layout:
+                    //   { layout: $(go.GridLayout,{
+                    //      arrangement: go.GridLayout.LeftToRight
+                    //   }) },
+                    {
+                        dragComputation: stayInFixedArea
+                    },
+                    new go.Binding("desiredSize", "size", go.Size.parse),
+                    // get and set the position in the model data
+                    new go.Binding("position", "pos", go.Point.parse),
+                    $(go.Shape, "Rectangle", // surrounds everything
+                        {
+                            parameter1: 10,
+                            fill: "rgba(128,128,128,0.33)"
+                        }
+                    ),
+                    $(go.Panel, "Vertical", {
+                        width: 200,
+                        height: 180
+                    }, // position header above the subgraph
+                        $(go.TextBlock, // group title near top, next to button
+                            {
+                                font: "Bold 12pt Sans-Serif"
+                            },
+                            new go.Binding("text", "text")),
+                        $(go.Placeholder, // represents area for all member parts
+                            {
+                                padding: 5,
+                            })
+                    )
+                ));
+
+                // declare the Diagram.layout:
+                myDiagram.layout = $(go.LayeredDigraphLayout, {
+                    direction: 90,
+                    layerSpacing: 10,
+                    isRealtime: false,
+                    columnSpacing: 10
+                });
+
+                myDiagram.linkTemplateMap.add("Orthogonal",
+                    // myDiagram.linkTemplate =
+                    $(go.Link,
+                        new go.Binding("fromSpot", "fromSpot", go.Spot.parse),
+                        new go.Binding("toSpot", "toSpot", go.Spot.parse), {
+                        selectable: false, // links cannot be selected by the user
+                        routing: go.Link.AvoidsNodes,
+                        curve: go.Link.JumpOver,
+                        layerName: "Background" // don't cross in front of any nodes
+                    },
+                        $(go.Shape, // this shape only shows when it isHighlighted
+                            {
+                                isPanelMain: true,
+                                stroke: null,
+                                strokeWidth: 5
+                            },
+                            new go.Binding("stroke", "isHighlighted", function (h) {
+                                return h ? "#436EEE" : null;
+                            }).ofObject()),
+                        $(go.Shape,
+                            // mark each Shape to get the link geometry with isPanelMain: true
+                            {
+                                isPanelMain: true,
+                                stroke: "#436EEE",
+                                strokeWidth: 2
+                            },
+                            new go.Binding("stroke", "color")),
+                        $(go.Shape, {
+                            toArrow: "Standard"
+                        }),
+                    )
+                );
+
+                myDiagram.linkTemplateMap.add("Link",
+                    // myDiagram.linkTemplate =
+                    $(go.Link, {
+                        routing: go.Link.AvoidsNodes, // may be either Orthogonal or AvoidsNodes
+                        curve: go.Link.JumpOver
+                    },
+                        $(go.Shape),
+                        $(go.Shape, {
+                            toArrow: "Standard"
+                        })
+                    ));
+
+                console.log("this.nodeDataArray", this.nodeDataArray);
+                myDiagram.model = new go.GraphLinksModel(this.nodeDataArray, this.linkDataArray);
+
+            },
+
+            getconfig() {
+                this.$axios({
+                    method: "post",
+                    url: '/sys/device/getconfig',
+                    data: JSON.stringify({
+                        "deviceId": this.$route.params.menuId,
+                        "key": "bhost_netconfig"
+                    }),
+                    headers: {
+                        'Content-Type': "application/json"
+                    },
+                    withCredentials: true,
+                }).then(res => {
+                    if (res.data.code == 0) {
+                        this.configData = res.data.data.config.data;
+
+                    } else {
+                        this.$message.error(res.data.msg);
+                        clearInterval(this.cpu);
+                    }
+                }).catch(error => {
+                    this.$message.error('获取数据失败！');
+                    clearInterval(this.cpu);
+                });
+            },
+            getProgressData() {
+                this.$axios({
+                    method: "post",
+                    url: '/sys/device/status',
+                    data: JSON.stringify({
+                        id: this.$route.params.menuId,
+                        "isSub": true,
+                        "keys": [
+                            "bht_host_sysprocess"
+                        ]
+                    }),
+                    headers: {
+                        'Content-Type': "application/json"
+                    },
+                    withCredentials: true,
+                }).then(res => {
+                    if (res.data.code == 0) {
+                        this.progressData = res.data.data.status.bht_host_sysprocess.data;
+
+                    } else {
+                        this.$message.error(res.data.msg);
+                        clearInterval(this.cpu);
+                    }
+                }).catch(error => {
+                    this.$message.error('获取数据失败！');
+                    clearInterval(this.cpu);
+                });
+            }
+        },
+        mounted: function () {
+            // this.getProgressData();
+            // this.getconfig();
+            this.getData();
+        }
+    }
+</script>
+
+<style scoped>
+    #myDiagramDiv {
+        background-color: #F8F8F8;
+        border: 1px solid #aaa;
+    }
+</style>

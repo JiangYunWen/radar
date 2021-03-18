@@ -1,0 +1,426 @@
+<template>
+<div>
+    <div class="cont">
+        <!--div class="contsolt" v-for="solt in solts" :key="solt.deviceId" -->
+        <div class="contsolt" v-for="index in 14" :key="index" solt="getslotobject(index)">
+            <template v-if="getslotobject(index)===null">
+                <span style=" position: relative;left: 35%;top:2%">{{index}}</span>
+            </template>
+            <!--template v-if="getslotobject(index).subtype===0">
+                    <img src="../../assets/img/record.png" class="dy" />
+                    <span style=" position: relative;left: 35%;bottom:100%">{{index}}</span>
+                    <span class="name1" v-if="getslotobject(index).name.length<5">{{getslotobject(index).name}}</span>
+                    <span class="name" v-else>{{getslotobject(index).name}}</span>
+                </template-->
+            <template v-else-if="getslotobject(index).subtype===5">
+                <img src="../../assets/img/other.png" class="dy" />
+                <span style=" position: relative;left: 35%;bottom:100%">{{index}}</span>
+                <span class="name1" v-if="getslotobject(index).name.length<5">{{getslotobject(index).name}}</span>
+                <span class="name" v-else>{{getslotobject(index).name}}</span>
+            </template>
+            <template v-else-if="getslotobject(index).subtype===7">
+                <img src="../../assets/img/record.jpg" class="dy" />
+                <span style=" position: relative;left: 35%;bottom:100%">{{index}}</span>
+                <span class="name1" v-if="getslotobject(index).name.length<5">{{getslotobject(index).name}}</span>
+                <span class="name" v-else>{{getslotobject(index).name}}</span>
+            </template>
+            <template v-else>
+                <ul>
+                    <span style=" position: relative;left: 35%;">{{index}}</span>
+                    <li> <span class="status">状态</span></li>
+                    <template v-if="getslotobject(index).alive==true">
+                        <el-checkbox-group class="moring" v-model="checkedCities" @change="handleCheckedCitiesChange">
+                            <el-checkbox :label="getslotobject(index).deviceId" :key="getslotobject(index).deviceId">
+                                <span hidden> {{getslotobject(index).deviceId}}</span>
+                            </el-checkbox>
+                        </el-checkbox-group>
+                        <li><img src="../../assets/img/statustrue.jpg" class="image" /></li>
+                        <SoltStatus v-bind:showdata="{
+                            titlename:'CPU',titleclass:'cpu',msgclass:'bat fa fa-fw', showico:'fa-battery-',value:getslotobject(index).status.brt_bmc_sys.cpurate}" v-if="getslotobject(index).status.brt_bmc_sys.cpurate!==undefined">
+                        </SoltStatus>
+
+                        <SoltStatus v-bind:showdata="{
+                        titlename:'内存',titleclass:'memory',msgclass:'memorybat fa fa-fw', showico:'fa-battery-',value:getslotobject(index).status.brt_bmc_sys.memRate}" v-if="getslotobject(index).status.brt_bmc_sys.memRate!==undefined">
+                        </SoltStatus>
+
+                        <SoltStatus v-bind:showdata="{
+                        titlename:'SSD',titleclass:'ssd',msgclass:'ssdbat fa fa-fw', showico:'fa-battery-',value:getslotobject(index).status.brt_bmc_sys.SSDRate}" v-if="!isNaN(getslotobject(index).status.brt_bmc_sys.SSDRate)">
+                        </SoltStatus>
+
+                        <span class="name1" v-if="getslotobject(index).name.length<5">{{getslotobject(index).name}}</span>
+                        <span class="name" v-else>{{getslotobject(index).name}}</span>
+                    </template>
+                    <template v-else>
+                        <img src="../../assets/img/statusfalse.jpg" class="image" />
+                        <span class="name1" v-if="getslotobject(index).name.length<5">{{getslotobject(index).name}}</span>
+                        <span class="name" v-else>{{getslotobject(index).name}}</span>
+                    </template>
+                </ul>
+            </template>
+
+        </div>
+    </div>
+    <div class="filter-container">
+        <div class="letf-items" style="float: left; margin:10px 0%; position: relative;">
+            <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="handleCheckAllChange">全选</el-checkbox>
+        </div>
+        <div style="float: left; " class="center">
+            <div>
+                <el-button style="width:100px;" @click="Action(1)">开机</el-button>
+            </div>
+            <div>
+                <el-button style="width:100px;" @click="Action(2)">关机</el-button>
+            </div>
+            <div>
+                <el-button style="width:100px;" @click="Action(3)">重启</el-button>
+            </div>
+        </div>
+        <div class="right-items" style="float: right; margin:5px -10px; position: relative;" hidden>
+            <el-button>批量执行命令</el-button>
+        </div>
+    </div>
+</div>
+</template>
+
+<script>
+import SoltStatus from '@/components/SoltStatus'
+var list = [{
+    name: '',
+    status: '',
+    cpu: '',
+    memory: ''
+}];
+export default {
+    components: {
+        SoltStatus
+    },
+    props: ['msg'],
+    data() {
+        return {
+            msg: this.msg,
+            solts: [],
+            solt: {},
+            checkAll: false,
+            checkedCities: [],
+            cities: [],
+            isIndeterminate: false,
+            IpmiCmdEnum: [],
+            form: {
+                cmdid: 0,
+                ids: []
+            },
+            viewclass: 'bat fa fa-battery-0 fa-fw'
+        }
+    },
+    methods: {
+        msgTolist() {
+            var array = [];
+            for (var i = 0; i < 14; i++) {
+                array.push(list[0]);
+            }
+            if (this.msg == null) {
+                this.solts = array;
+                return;
+            }
+            for (var i = 0; i < this.msg.length; i++) {
+                if (this.msg[i].status.brt_bmc_sys != null) {
+                    this.msg[i].status.brt_bmc_sys['ssdRate'] = Math.round((this.msg[i].status.brt_bmc_sys.usedSSDSize / this.msg[i].status.brt_bmc_sys.ssdsize) * 100);
+                    this.cities[i] = this.msg[i].deviceId;
+                    array[this.msg[i].slotPosition - 1] = this.msg[i];
+                } else {
+                    array[this.msg[i].slotPosition - 1] = this.msg[i];
+                }
+            }
+            this.solts = array;
+        },
+        //全选
+        handleCheckAllChange(val) {
+            this.checkedCities = val ? this.cities : [];
+            this.isIndeterminate = false;
+        },
+        //单选及反选
+        handleCheckedCitiesChange(value) {
+            this.form.ids = value;
+            let checkedCount = value.length;
+            this.checkAll = checkedCount === this.cities.length;
+            this.isIndeterminate = checkedCount > 0 && checkedCount < this.cities.length;
+        },
+        IpmiCmd(cmd) {
+            this.$axios({
+                method: "POST",
+                url: '/sys/device/cmd/ipmi',
+                data: JSON.stringify(this.form),
+                headers: {
+                    'Content-Type': "application/json"
+                },
+                withCredentials: true,
+            }).then((res) => {
+                let data = res.data
+                if (data.code == 0) {
+                    this.$message.success('操作完成');
+                } else {
+                    this.$message.error(data.msg || '操作失败')
+                }
+                this.uploadLoading = false
+            }).catch((e) => {
+                this.uploadLoading = false
+                this.$message.error(e)
+            });
+        },
+        //命令
+        Action(cmd) {
+            this.$axios({
+                method: "get",
+                url: '/getData/getEnum?enumName=IpmiCmdEnum',
+                withCredentials: true,
+            }).then(res => {
+                if (res.data.code == 0) {
+                    this.IpmiCmdEnum = res.data.data;
+                    for (var i = 0; i < this.IpmiCmdEnum.length; i++) {
+                        if (this.IpmiCmdEnum[i].code === cmd) {
+                            this.form.cmdid = this.IpmiCmdEnum[i].code;
+                            this.IpmiCmd();
+                        }
+                    }
+                } else {
+                    this.$message.error(res.data.msg);
+                }
+            }).catch(error => {
+                this.$message.error('获取数据失败！');
+            });
+        },
+        getslotobject(index) {
+            var result = null
+            for (var ss in this.solts) {
+                if (this.solts[ss].slotPosition === index) {
+                    result = this.solts[ss];
+                }
+            }
+            return result;
+        }
+    },
+    //监听数据变化
+    watch: {
+        msg: {
+            handler(newVal) {
+                // this.msgTolist();
+            },
+            deep: true
+        },
+    },
+    mounted: function () {
+        this.msgTolist();
+        //全选全不选
+        $("#checkAll").click(function () {
+            $('input[name="check"]').attr("checked", this.checked);
+        });
+        var $subBox = $("input[name='check']");
+        $subBox.click(function () {
+            $("#checkAll").attr("checked", $subBox.length == $("input[name='check']:checked").length ? true : false);
+        });
+
+        //反选*****
+    }
+}
+</script>
+
+<style>
+ul li {
+    list-style-type: none;
+}
+
+.letf-items {
+    margin-bottom: 10px;
+}
+
+.right-items {
+    margin-bottom: 10px;
+}
+
+.el-header {
+    background-color: #B3C0D1;
+    color: #333;
+    text-align: center;
+    /* line-height: 60px; */
+    width: 1100px;
+    height: 90px;
+}
+
+.box {
+    /* width: 1000px;
+     height: 400px; */
+    display: flex;
+    ;
+    background-color: #E9EEF3;
+    /* border:1px solid black; */
+    /* flex-direction: column; */
+}
+
+.el-main {
+    display: flex;
+    background-color: #E9EEF3;
+    color: #333;
+    text-align: center;
+    line-height: 140px;
+    width: 1100px;
+    height: 435px;
+}
+
+body>.el-container {
+    margin-bottom: 20px;
+}
+
+.cont {
+    position: relative;
+    width: auto;
+    height: 250px;
+    border: 1px solid black;
+    margin: 15px 2px;
+    display: flex;
+}
+
+/* 槽位*/
+.contsolt {
+    position: relative;
+    width: 50%;
+    height: 80%;
+    background-color: #e7e7e7;
+    border: 1px solid black;
+    margin: 10px 2px;
+}
+
+/* 复选框 */
+.checkbox {
+    position: absolute;
+    bottom: -30px;
+    left: 10px;
+}
+
+/* 状态 */
+.status {
+    position: relative;
+    top: 0%;
+    font-size: 0.5em;
+    white-space: nowrap;
+    /*强制span不换行*/
+    left: 25%;
+    color: blue;
+}
+
+/* 状态显示 */
+.image {
+    position: relative;
+    width: 40%;
+    top: 15%;
+    left: 30%;
+}
+
+/* cpu数*/
+.cpu {
+    position: relative;
+    font-size: 0.5em;
+    white-space: nowrap;
+    /*强制span不换行*/
+    top: 18%;
+    left: 25%;
+}
+
+/* cpu数值 */
+.bat {
+    position: relative;
+    top: 25%;
+    left: 30%;
+    width: 40%;
+    height: 18px;
+}
+
+/* 内存 */
+.memory {
+    position: relative;
+    font-size: 0.5em;
+    white-space: nowrap;
+    /*强制span不换行*/
+    top: 26%;
+    left: 25%;
+}
+
+/* 内存数值 */
+.memorybat {
+    position: relative;
+    top: 35%;
+    left: 30%;
+}
+
+/* SSD */
+.ssd {
+    position: relative;
+    font-size: 0.5em;
+    white-space: nowrap;
+    /*强制span不换行*/
+    top: 35%;
+    left: 25%;
+}
+
+/* 硬盘数值 */
+.ssdbat {
+    position: relative;
+    top: 45%;
+    left: 30%;
+}
+
+/* 刀片名称*/
+.name {
+    position: absolute;
+    font-size: 0.5em;
+    top: 90%;
+    left: 0%;
+    transform: scale(0.75);
+    white-space: nowrap;
+    /*强制span不换行*/
+    display: inline-block;
+    /*将span当做块级元素对待*/
+    width: 25px;
+    /*限制宽度*/
+    text-align: center;
+}
+
+.name1 {
+    position: absolute;
+    font-size: 0.5em;
+    top: 90%;
+    left: 15%;
+    transform: scale(0.75);
+    white-space: nowrap;
+    /*强制span不换行*/
+    display: inline-block;
+    /*将span当做块级元素对待*/
+    width: 25px;
+    /*限制宽度*/
+    text-align: center;
+}
+
+/* 电源刀片*/
+.dy {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.center {
+    position: relative;
+    left: 18%;
+
+}
+
+.center div {
+    position: relative;
+    display: inline-block;
+    margin: 5px 10px;
+}
+
+.moring {
+    position: absolute;
+    bottom: -30px;
+    left: 30%;
+}
+</style>

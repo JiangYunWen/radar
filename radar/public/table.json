@@ -1,0 +1,40 @@
+{
+    "date":["00:46:30","00:46:35","00:46:40","00:46:45","00:46:50","00:46:55","00:47:00"],
+    "list": [{
+            "id": 1,
+            "name": "风扇1",
+            "smooth": true,
+            "type": "line",
+            "itemStyle": {
+                "normal": {
+                    "areaStyle": {
+                        "type": "default"}}
+                },
+            "data": [10, 12, 21, 54, 260, 830, 710,454,675,343]
+        },
+        {
+            "id": 2,
+            "name": "风扇2",
+            "smooth": true,
+            "type": "line",
+            "itemStyle": {
+                "normal": {
+                    "areaStyle": {
+                        "type": "default"}}
+                },
+            "data": [30, 182, 434, 791, 390, 30, 10,454,675,343]
+        },
+        {
+            "id": 3,
+            "name": "风扇3",
+            "smooth": true,
+            "type": "line",
+            "itemStyle": {
+                "normal": {
+                    "areaStyle": {
+                        "type": "default"}}
+                },
+            "data": [1320, 1132, 601, 234, 120, 90, 20,454,675,343]
+        }
+    ]
+}

@@ -1,0 +1,544 @@
+{
+    "SoltsLinks":[
+
+        {"from": "LS2F1","to": "SRIO1","category": "Link"},
+        {"from": "LS2F1","to": "UART1","category": "Orthogonal","fromSpot": "Left", "toSpot": "Left"},
+        {"from": "LS2F1","to": "以太网1","category": "Orthogonal","fromSpot": "Top", "toSpot": "Bottom"},
+        {"from": "LS2F1","to": "ETH1","category": "Orthogonal40G","fromSpot": "Right", "toSpot": "TopSide"},
+        {"from": "以太网11","to": "ETH1","category": "Orthogonal40G","fromSpot": "Bottom", "toSpot": "TopSide"},
+        {"from": "以太网12","to": "ETH1","category": "Orthogonal","fromSpot": "Bottom", "toSpot": "TopSide"},
+
+
+        {"from": "LS2F2","to": "SRIO11","category": "Link"},
+        {"from": "LS2F2","to": "UART2","category": "Orthogonal","fromSpot": "Left", "toSpot": "Left"},
+        {"from": "LS2F2","to": "以太网2","category": "Orthogonal","fromSpot": "Top", "toSpot": "Bottom"},
+        {"from": "LS2F2","to": "ETH2","category": "Orthogonal40G","fromSpot": "Right", "toSpot": "TopSide"},
+        {"from": "以太网331","to": "ETH2","category": "Orthogonal40G","fromSpot": "Bottom", "toSpot": "TopSide"},
+        {"from": "SRIO11","to": "SRIO12","category": "Link"},
+        {"from": "SRIO13","to": "SRIO11","category": "Link"},
+        {"from": "SRIO13","to": "SRIO12","category": "Link"},
+        {"from": "SRIO13","to": "SRIO14","category": "Link"},
+        {"from": "SRIO13","to": "SRIO15","category": "Link"},
+        {"from": "SRIO14","to": "SRIO11","category": "Link"},
+        {"from": "SRIO14","to": "SRIO12","category": "Link"},
+        {"from": "SRIO15","to": "SRIO12","category": "Link"},
+        {"from": "SRIO15","to": "SRIO11","category": "Link"},
+        {"from": "SRIO15","to": "SRIO14","category": "Link"},
+
+        {"from": "Chip121","to": "UART121","category": "Orthogonal","fromSpot": "LeftSide", "toSpot": "Left"},
+        {"from": "SRIO11","to": "Chip121","category": "OrthogonalSRIO","fromSpot": "Bottom", "toSpot": "TopSide"},
+        {"from": "ETH1","to": "Chip121","category": "Orthogonal40G","fromSpot": "Bottom", "toSpot": "TopSide"},
+        {"from": "ETH2","to": "Chip121","category": "Orthogonal","fromSpot": "Bottom", "toSpot": "TopSide"},
+        {"from": "以太网121","to": "Chip121","category": "Orthogonal","fromSpot": "Top", "toSpot": "BottomSide"},
+        {"from": "以太网2221","to": "Chip121","category": "Orthogonal","fromSpot": "Top", "toSpot": "RightSide"},
+        {"from": "以太网2222","to": "Chip121","category": "Orthogonal","fromSpot": "Top", "toSpot": "RightSide"},
+
+        {"from": "Chip131","to": "UART131","category": "Orthogonal","fromSpot": "LeftSide", "toSpot": "Left"},
+        {"from": "ETH1","to": "Chip131","category": "Orthogonal40G","fromSpot": "BottomSide", "toSpot": "TopSide"},
+        {"from": "SRIO11","to": "Chip131","category": "OrthogonalSRIO","fromSpot": "Bottom", "toSpot": "TopSide"},
+        {"from": "ETH2","to": "Chip131","category": "Orthogonal","fromSpot": "Bottom", "toSpot": "TopSide"},
+        {"from": "以太网131","to": "Chip131","category": "Orthogonal","fromSpot": "Top", "toSpot": "BottomSide"},
+        {"from": "以太网231","to": "Chip131","category": "Orthogonal","fromSpot": "Top", "toSpot": "RightSide"},
+        {"from": "以太网232","to": "Chip131","category": "Orthogonal","fromSpot": "Top", "toSpot": "RightSide"},
+
+        {"from": "ETH41","to": "以太网41","category": "Orthogonal","fromSpot": "BottomSide", "toSpot": "Right"},
+        {"from": "Chip41","to": "UART41","category": "Orthogonal","fromSpot": "LeftSide", "toSpot": "Left"},
+        {"from": "ETH1","to": "Chip41","category": "Orthogonal40G","fromSpot": "Bottom", "toSpot": "TopSide"},
+        {"from": "SRIO11","to": "Chip41","category": "OrthogonalSRIO","fromSpot": "Bottom", "toSpot": "TopSide"},
+        {"from": "ETH2","to": "Chip41","category": "Orthogonal","fromSpot": "Bottom", "toSpot": "TopSide"},
+        {"from": "以太网41","to": "Chip41","category": "Orthogonal","fromSpot": "Top", "toSpot": "BottomSide"},
+        {"from": "以太网411","to": "Chip41","category": "Orthogonal","fromSpot": "Top", "toSpot": "RightSide"},
+        {"from": "以太网412","to": "Chip41","category": "Orthogonal","fromSpot": "Top", "toSpot": "RightSide"},
+
+        {"from": "ETH51","to": "以太网51","category": "Orthogonal","fromSpot": "BottomSide", "toSpot": "Right"},
+        {"from": "Chip51","to": "UART51","category": "Orthogonal","fromSpot": "LeftSide", "toSpot": "Left"},
+        {"from": "ETH1","to": "Chip51","category": "Orthogonal40G","fromSpot": "Bottom", "toSpot": "TopSide"},
+        {"from": "SRIO11","to": "Chip51","category": "OrthogonalSRIO","fromSpot": "Bottom", "toSpot": "TopSide"},
+        {"from": "ETH2","to": "Chip51","category": "Orthogonal","fromSpot": "Bottom", "toSpot": "TopSide"},
+        {"from": "以太网51","to": "Chip51","category": "Orthogonal","fromSpot": "Top", "toSpot": "BottomSide"},
+        {"from": "以太网511","to": "Chip51","category": "Orthogonal","fromSpot": "Top", "toSpot": "RightSide"},
+        {"from": "以太网512","to": "Chip51","category": "Orthogonal","fromSpot": "Top", "toSpot": "RightSide"},
+
+        {"from": "ETH61","to": "以太网61","category": "Orthogonal","fromSpot": "BottomSide", "toSpot": "Right"},
+        {"from": "Chip61","to": "UART61","category": "Orthogonal","fromSpot": "LeftSide", "toSpot": "Left"},
+        {"from": "ETH1","to": "Chip61","category": "Orthogonal40G","fromSpot": "Bottom", "toSpot": "TopSide"},
+        {"from": "SRIO11","to": "Chip61","category": "OrthogonalSRIO","fromSpot": "Bottom", "toSpot": "TopSide"},
+        {"from": "ETH2","to": "Chip61","category": "Orthogonal","fromSpot": "Bottom", "toSpot": "TopSide"},
+        {"from": "以太网61","to": "Chip61","category": "Orthogonal","fromSpot": "Top", "toSpot": "BottomSide"},
+        {"from": "以太网611","to": "Chip61","category": "Orthogonal","fromSpot": "Top", "toSpot": "RightSide"},
+        {"from": "以太网612","to": "Chip61","category": "Orthogonal","fromSpot": "Top", "toSpot": "RightSide"},
+
+        {"from": "ETH71","to": "以太网71","category": "Orthogonal","fromSpot": "BottomSide", "toSpot": "Right"},
+        {"from": "Chip71","to": "UART71","category": "Orthogonal","fromSpot": "LeftSide", "toSpot": "Left"},
+        {"from": "ETH1","to": "Chip71","category": "Orthogonal40G","fromSpot": "Bottom", "toSpot": "TopSide"},
+        {"from": "SRIO11","to": "Chip71","category": "OrthogonalSRIO","fromSpot": "Bottom", "toSpot": "TopSide"},
+        {"from": "ETH2","to": "Chip71","category": "Orthogonal","fromSpot": "Bottom", "toSpot": "TopSide"},
+        {"from": "以太网71","to": "Chip71","category": "Orthogonal","fromSpot": "Top", "toSpot": "BottomSide"},
+        {"from": "以太网711","to": "Chip71","category": "Orthogonal","fromSpot": "Top", "toSpot": "RightSide"},
+        {"from": "以太网712","to": "Chip71","category": "Orthogonal","fromSpot": "Top", "toSpot": "RightSide"},
+
+        {"from": "ETH81","to": "以太网81","category": "Orthogonal","fromSpot": "BottomSide", "toSpot": "Right"},
+        {"from": "Chip81","to": "UART81","category": "Orthogonal","fromSpot": "LeftSide", "toSpot": "Left"},
+        {"from": "ETH1","to": "Chip81","category": "Orthogonal40G","fromSpot": "Bottom", "toSpot": "TopSide"},
+        {"from": "SRIO11","to": "Chip81","category": "OrthogonalSRIO","fromSpot": "Bottom", "toSpot": "TopSide"},
+        {"from": "ETH2","to": "Chip81","category": "Orthogonal","fromSpot": "Bottom", "toSpot": "TopSide"},
+        {"from": "以太网81","to": "Chip81","category": "Orthogonal","fromSpot": "Top", "toSpot": "BottomSide"},
+        {"from": "以太网811","to": "Chip81","category": "Orthogonal","fromSpot": "Top", "toSpot": "RightSide"},
+        {"from": "以太网812","to": "Chip81","category": "Orthogonal","fromSpot": "Top", "toSpot": "RightSide"},
+
+        {"from": "ETH91","to": "以太网91","category": "Orthogonal","fromSpot": "BottomSide", "toSpot": "Right"},
+        {"from": "Chip91","to": "UART91","category": "Orthogonal","fromSpot": "LeftSide", "toSpot": "Left"},
+        {"from": "ETH1","to": "Chip91","category": "Orthogonal40G","fromSpot": "Bottom", "toSpot": "TopSide"},
+        {"from": "SRIO11","to": "Chip91","category": "OrthogonalSRIO","fromSpot": "Bottom", "toSpot": "TopSide"},
+        {"from": "ETH2","to": "Chip91","category": "Orthogonal","fromSpot": "Bottom", "toSpot": "TopSide"},
+        {"from": "以太网91","to": "Chip91","category": "Orthogonal","fromSpot": "Top", "toSpot": "BottomSide"},
+        {"from": "以太网911","to": "Chip91","category": "Orthogonal","fromSpot": "Top", "toSpot": "RightSide"},
+        {"from": "以太网912","to": "Chip91","category": "Orthogonal","fromSpot": "Top", "toSpot": "RightSide"},
+
+
+        {"from": "ETH11","to": "以太网111","category": "Orthogonal","fromSpot": "BottomSide", "toSpot": "Right"},
+        {"from": "Chip11","to": "UART11","category": "Orthogonal","fromSpot": "LeftSide", "toSpot": "Left"},
+        {"from": "ETH1","to": "Chip11","category": "Orthogonal40G","fromSpot": "Bottom", "toSpot": "TopSide"},
+        {"from": "SRIO11","to": "Chip11","category": "OrthogonalSRIO","fromSpot": "Bottom", "toSpot": "TopSide"},
+        {"from": "ETH2","to": "Chip11","category": "Orthogonal","fromSpot": "Bottom", "toSpot": "TopSide"},
+        {"from": "以太网111","to": "Chip11","category": "Orthogonal","fromSpot": "Top", "toSpot": "BottomSide"},
+        {"from": "以太网112","to": "Chip11","category": "Orthogonal","fromSpot": "Top", "toSpot": "RightSide"},
+        {"from": "以太网113","to": "Chip11","category": "Orthogonal","fromSpot": "Top", "toSpot": "RightSide"},
+
+
+        {"from": "ETH21","to": "以太网21","category": "Orthogonal","fromSpot": "BottomSide", "toSpot": "Right"},
+        {"from": "Chip21","to": "UART21","category": "Orthogonal","fromSpot": "LeftSide", "toSpot": "Left"},
+        {"from": "ETH1","to": "Chip21","category": "Orthogonal40G","fromSpot": "Bottom", "toSpot": "TopSide"},
+        {"from": "SRIO11","to": "Chip21","category": "OrthogonalSRIO","fromSpot": "Bottom", "toSpot": "TopSide"},
+        {"from": "ETH2","to": "Chip21","category": "Orthogonal","fromSpot": "Bottom", "toSpot": "TopSide"},
+        {"from": "以太网11","to": "ETH1","category": "Orthogonal","fromSpot": "BottomSide", "toSpot": "TopSide"},
+        {"from": "以太网21","to": "Chip21","category": "Orthogonal","fromSpot": "Top", "toSpot": "BottomSide"},
+        {"from": "以太网211","to": "Chip21","category": "Orthogonal","fromSpot": "Top", "toSpot": "RightSide"},
+        {"from": "以太网221","to": "Chip21","category": "Orthogonal","fromSpot": "Top", "toSpot": "RightSide"}
+
+    ],
+    "OnlineSolts":[{
+            "soltPosition":8,
+            "subtype":4,
+            "key":"Alpha",
+            "category":"test",
+            "text":"Alpha",
+            "size": "400 600",
+            "Group":[{
+                "key":"we",
+                "text":"交换刀片1-前面板",
+                "group":"Alpha",
+                "category":"OfGroup2",
+                "pos": "-33 -70",
+                "size": "150 200",
+                "Chips":[
+                    {"key":"UART1","text":"UART","category":"ManualOperation","group": "we"},
+                    {"key":"以太网1","text":"以太网","category":"Srio","group": "we"}
+                    ]
+                },
+                { "key": "solt1", "text":"后面板-Slot8","group": "Alpha","category":"OfGroup3","pos": "85 -30", "size": "240 200",
+                    "Chips":[{"key":"1以太网11","text":"以太网","category":"Srio","group": "solt1"},
+                        {"key":"以太网12","text":"以太网","category":"Srio","group": "solt1"}] 
+                },
+                {
+                    "key":"Omega",
+                    "text":"Omega",
+                    "group":"Alpha",
+                    "category":"test",
+                    "pos":"0 200",
+                    "size":"400 400",
+                    "Chips":[
+                        {"key":"LS2F1","text":"Chip         LS2F", "group": "Omega","category":"Rectangle","ribbon": "0" ,"pos": "50 210","ribbon1":"45","color":"green"},
+                        { "key": "ETH1", "text":"40G + GbE SW","group": "Omega","ribbon": "0" ,"ribbon1":"50","category":"StopSign40G","pos": "150 350","color":"green"}]
+                }
+                ]
+        },{
+            "soltPosition":9,
+            "subtype":3,
+            "key":"Alpha3",
+            "category":"test",
+            "text":"Alpha3",
+            "size": "400 600",
+            "Group":[{
+                "key":"we3",
+                "text":"交换刀片2-前面板",
+                "group":"Alpha3",
+                "category":"OfGroup2",
+                "pos": "-33 -70",
+                "size": "150 200",
+                "Chips":[
+                    {"key":"UART2","text":"UART","category":"ManualOperation","group": "we3"},
+                    {"key":"以太网2","text":"以太网","category":"Srio","group": "we3"}
+                    ]
+                },
+                { "key": "solt33", "text":"后面板-Slot9","group": "Alpha3","category":"OfGroup3","pos": "125 -30", "size": "240 200",
+                    "Chips":[{"key":"以太网331","text":"以太网","category":"Srio","group": "solt33"}] 
+                },
+                {
+                    "key":"Omega33",
+                    "text":"Omega",
+                    "group":"Alpha3",
+                    "category":"test",
+                    "pos":"0 200",
+                    "size":"400 400",
+                    "Chips":[
+                        {"key":"LS2F2","text":"Chip         LS2F", "group": "Omega33","category":"Rectangle","ribbon": "0" ,"pos": "50 210","ribbon1":"45","color":"green"},
+                        { "key": "ETH2", "text":"ETH SW","group": "Omega33","ribbon": "0" ,"ribbon1":"50","category":"StopSignETH","pos": "300 300","color":"green"},
+
+                        { "key": "SRIO11", "text":"SRIO SW","group": "Omega33","ribbon": "0" ,"ribbon1":"50","category":"StopSign","pos": "70 360","color":"green"},
+                        { "key": "SRIO12", "text":"SRIO SW","group": "Omega33","ribbon": "0" ,"ribbon1":"50","category":"StopSign","pos": "200 360","color":"green"},
+                        { "key": "SRIO13", "text":"SRIO SW","group": "Omega33","ribbon": "0" ,"ribbon1":"50","category":"StopSign","pos": "30 460","color":"green"},
+                        { "key": "SRIO14", "text":"SRIO SW","group": "Omega33","ribbon": "0" ,"ribbon1":"50","category":"StopSign","pos": "240 460","color":"green"},
+                        { "key": "SRIO15", "text":"SRIO SW","group": "Omega33","ribbon": "0" ,"ribbon1":"50","category":"StopSign","pos": "140 520","color":"green"}]
+                }
+                ]
+        },
+        {
+            "soltPosition":3,
+            "subtype":2,
+            "key":"zxy12",
+            "category":"test",
+            "text":"zxy",
+            "size": "420 650",
+            "Group":[
+                {
+                    "key":"kill12",
+                    "group":"zxy12",
+                    "category":"test",
+                    "pos":"0 0",
+                    "size":"420 450",
+                    "Chips":[
+                        {"key":"Chip121", "text":"存储CPU XEON E3","group": "kill12","category":"Rectangle","pos":"150 150","ribbon": "0" ,"ribbon1":"70","color":"red"}]
+                },
+                {
+                "key":"kil122",
+                "text":"功能刀片1-前面板",
+                "group":"zxy12",
+                "category":"OfGroup2",
+                "pos": "-33 380",
+                "size": "150 195",
+                "Chips":[
+                    {"key":"以太网121", "text":"以太网","category":"Srio","group": "kil122"},
+                    {"key":"UART121", "text":"UART","category":"ManualOperation","group": "kil122"}]
+                },
+                { "key": "kil1222",  "text":"功能刀片1-后面板","group": "zxy12","category":"OfGroup3","pos": "85 420", "size": "260 200",
+                    "Chips":[
+                        {"key":"以太网2221","text":"以太网","category":"Srio","group": "kil1222"},
+                        {"key":"以太网2222","text":"以太网","category":"Srio","group": "kil1222"}] 
+                }]
+        },
+        {
+            "soltPosition":4,
+            "subtype":2,
+            "key":"zxy13",
+            "category":"test",
+            "text":"zxy",
+            "size": "420 650",
+            "Group":[
+                {
+                    "key":"kill13",
+                    "group":"zxy13",
+                    "category":"test",
+                    "pos":"0 0",
+                    "size":"420 450",
+                    "Chips":[
+                        {"key":"Chip131", "text":"存储CPU XEON E3","group": "kill13","category":"Rectangle","pos":"150 150","ribbon": "0" ,"ribbon1":"70","color":"red"}]
+                },
+                {
+                "key":"kil133",
+                "text":"功能刀片2-前面板",
+                "group":"zxy13",
+                "category":"OfGroup2",
+                "pos": "-33 380",
+                "size": "150 195",
+                "Chips":[
+                    {"key":"以太网131", "text":"以太网","category":"Srio","group": "kil133"},
+                    {"key":"UART131", "text":"UART","category":"ManualOperation","group": "kil133"}]
+                },
+                { "key": "kil23",  "text":"功能刀片2-后面板","group": "zxy13","category":"OfGroup3","pos": "85 420", "size": "260 200",
+                    "Chips":[
+                        {"key":"以太网231","text":"以太网","category":"Srio","group": "kil23"},
+                        {"key":"以太网232","text":"以太网","category":"Srio","group": "kil23"}] 
+                }]
+        },
+        {
+            "soltPosition":5,
+            "subtype":1,
+            "category":"test",
+            "key":"ala2",
+            "text":"ala2",
+            "size": "420 650",
+            "Group":[
+                {
+                    "key":"dd",
+                    "group":"ala2",
+                    "category":"test",
+                    "pos":"0 0",
+                    "size":"420 450",
+                    "Chips":[
+                        {"key":"Chip41", "text":"Chip     FT1500","group": "dd","category":"Rectangle","pos":"150 150","ribbon": "0" ,"ribbon1":"50","color":"green"}]
+                },
+                {
+                "key":"solt2",
+                "text":"功能刀片3-前面板",
+                "group":"ala2",
+                "category":"OfGroup2",
+                "pos": "-33 380",
+                "size": "150 195",
+                "Chips":[
+                    {"key":"以太网41","text":"以太网","category":"Srio","group": "solt2"},
+                    {"key":"UART41","text":"UART","category":"ManualOperation","group": "solt2"}]
+                   
+                },
+                { "key": "solt41", "text":"功能刀片3-后面板","group": "ala2","category":"OfGroup3","pos": "85 420", "size": "260 200",
+                    "Chips":[
+                        {"key":"以太网411","text":"以太网","category":"Srio","group": "solt41"},
+                        {"key":"以太网412","text":"以太网","category":"Srio","group": "solt41"}] 
+                }]
+        },
+        {
+            "soltPosition":6,
+            "subtype":1,
+            "category":"test",
+            "key":"jyw",
+            "text":"ala2",
+            "size": "420 650",
+            "Group":[
+                {
+                    "key":"dd5",
+                    "group":"jyw",
+                    "category":"test",
+                    "pos":"0 0",
+                    "size":"420 450",
+                    "Chips":[
+                        {"key":"Chip51", "text":"Chip     FT1500","group": "dd5","category":"Rectangle","pos":"150 150","ribbon": "0" ,"ribbon1":"50","color":"green"}
+                        ]
+                },
+                {
+                "key":"solt5",
+                "text":"功能刀片4-前面板",
+                "group":"jyw",
+                "category":"OfGroup2",
+                "pos": "-33 380",
+                "size": "150 195",
+                "Chips":[
+                    {"key":"以太网51","text":"以太网","category":"Srio","group": "solt5"},
+                    {"key":"UART51","text":"UART","category":"ManualOperation","group": "solt5"}]
+                   
+                },
+                { "key": "solt51", "text":"功能刀片4-后面板","group": "jyw","category":"OfGroup3","pos": "85 420", "size": "260 200",
+                    "Chips":[
+                        {"key":"以太网511","text":"以太网","category":"Srio","group": "solt51"},
+                        {"key":"以太网512","text":"以太网","category":"Srio","group": "solt51"}] 
+                }]
+        },
+        {
+            "soltPosition":7,
+            "subtype":2,
+            "key":"zxy",
+            "category":"test",
+            "text":"zxy",
+            "size": "420 650",
+            "Group":[
+                {
+                    "key":"kill",
+                    "group":"zxy",
+                    "category":"test",
+                    "pos":"0 0",
+                    "size":"420 450",
+                    "Chips":[
+                        {"key":"Chip61", "text":"Chip     FT1500","group": "kill","category":"Rectangle","pos":"150 150","ribbon": "0" ,"ribbon1":"50","color":"green"}]
+                },
+                {
+                "key":"kill1",
+                "text":"功能刀片5-前面板",
+                "group":"zxy",
+                "category":"OfGroup2",
+                "pos": "-33 380",
+                "size": "150 195",
+                "Chips":[
+                    {"key":"以太网61", "text":"以太网","category":"Srio","group": "kill1"},
+                    {"key":"UART61", "text":"UART","category":"ManualOperation","group": "kill1"}]
+                },
+                { "key": "kill2",  "text":"功能刀片5-后面板","group": "zxy","category":"OfGroup3","pos": "85 420", "size": "260 200",
+                    "Chips":[
+                        {"key":"以太网611","text":"以太网","category":"Srio","group": "kill2"},
+                        {"key":"以太网612","text":"以太网","category":"Srio","group": "kill2"}] 
+                }]
+        },
+        {
+            "soltPosition":10,
+            "subtype":2,
+            "key":"zxy7",
+            "category":"test",
+            "text":"zxy",
+            "size": "420 650",
+            "Group":[
+                {
+                    "key":"kill7",
+                    "group":"zxy7",
+                    "category":"test",
+                    "pos":"0 0",
+                    "size":"420 450",
+                    "Chips":[
+                        {"key":"Chip71", "text":"Chip     FT1500","group": "kill7","category":"Rectangle","pos":"150 150","ribbon": "0" ,"ribbon1":"50","color":"green"}]
+                },
+                {
+                "key":"kil1",
+                "text":"功能刀片6-前面板",
+                "group":"zxy7",
+                "category":"OfGroup2",
+                "pos": "-33 380",
+                "size": "150 195",
+                "Chips":[
+                    {"key":"以太网71", "text":"以太网","category":"Srio","group": "kil1"},
+                    {"key":"UART71", "text":"UART","category":"ManualOperation","group": "kil1"}]
+                },
+                { "key": "kil2",  "text":"功能刀片6-后面板","group": "zxy7","category":"OfGroup3","pos": "85 420", "size": "260 200",
+                    "Chips":[
+                        {"key":"以太网711","text":"以太网","category":"Srio","group": "kil2"},
+                        {"key":"以太网712","text":"以太网","category":"Srio","group": "kil2"}] 
+                }]
+        },
+        {
+            "soltPosition":11,
+            "subtype":2,
+            "key":"zxy8",
+            "category":"test",
+            "text":"zxy",
+            "size": "420 650",
+            "Group":[
+                {
+                    "key":"kill8",
+                    "group":"zxy8",
+                    "category":"test",
+                    "pos":"0 0",
+                    "size":"420 450",
+                    "Chips":[
+                        {"key":"Chip81", "text":"Chip     FT1500","group": "kill8","category":"Rectangle","pos":"150 150","ribbon": "0" ,"ribbon1":"50","color":"green"}]
+                },
+                {
+                "key":"kil8",
+                "text":"功能刀片7-前面板",
+                "group":"zxy8",
+                "category":"OfGroup2",
+                "pos": "-33 380",
+                "size": "150 195",
+                "Chips":[
+                    {"key":"以太网81", "text":"以太网","category":"Srio","group": "kil8"},
+                    {"key":"UART81", "text":"UART","category":"ManualOperation","group": "kil8"}]
+                },
+                { "key": "kil88",  "text":"功能刀片7-后面板","group": "zxy8","category":"OfGroup3","pos": "85 420", "size": "260 200",
+                    "Chips":[
+                        {"key":"以太网811","text":"以太网","category":"Srio","group": "kil88"},
+                        {"key":"以太网812","text":"以太网","category":"Srio","group": "kil88"}] 
+                }]
+        },
+        {
+            "soltPosition":12,
+            "subtype":2,
+            "key":"zxy9",
+            "category":"test",
+            "text":"zxy",
+            "size": "420 650",
+            "Group":[
+                {
+                    "key":"kill9",
+                    "group":"zxy9",
+                    "category":"test",
+                    "pos":"0 0",
+                    "size":"420 450",
+                    "Chips":[
+                        {"key":"Chip91", "text":"Chip     FT1500","group": "kill9","category":"Rectangle","pos":"150 150","ribbon": "0" ,"ribbon1":"50","color":"green"}]
+                },
+                {
+                "key":"kil99",
+                "text":"功能刀片8-前面板",
+                "group":"zxy9",
+                "category":"OfGroup2",
+                "pos": "-33 380",
+                "size": "150 195",
+                "Chips":[
+                    {"key":"以太网91", "text":"以太网","category":"Srio","group": "kil99"},
+                    {"key":"UART91", "text":"UART","category":"ManualOperation","group": "kil99"}]
+                },
+                { "key": "kil999",  "text":"功能刀片8-后面板","group": "zxy9","category":"OfGroup3","pos": "85 420", "size": "260 200",
+                    "Chips":[
+                        {"key":"以太网911","text":"以太网","category":"Srio","group": "kil999"},
+                        {"key":"以太网912","text":"以太网","category":"Srio","group": "kil999"}] 
+                }]
+        },
+        {
+            "soltPosition":13,
+            "subtype":2,
+            "key":"zxy11",
+            "category":"test",
+            "text":"zxy",
+            "size": "420 650",
+            "Group":[
+                {
+                    "key":"kill11",
+                    "group":"zxy11",
+                    "category":"test",
+                    "pos":"0 0",
+                    "size":"420 450",
+                    "Chips":[
+                        {"key":"Chip11", "text":"Chip     FT1500","group": "kill11","category":"Rectangle","pos":"150 150","ribbon": "0" ,"ribbon1":"50","color":"green"}]
+                },
+                {
+                "key":"kil111",
+                "text":"功能刀片9-前面板",
+                "group":"zxy11",
+                "category":"OfGroup2",
+                "pos": "-33 380",
+                "size": "150 195",
+                "Chips":[
+                    {"key":"以太网111", "text":"以太网","category":"Srio","group": "kil111"},
+                    {"key":"UART11", "text":"UART","category":"ManualOperation","group": "kil111"}]
+                },
+                { "key": "kil1111",  "text":"功能刀片9-后面板","group": "zxy11","category":"OfGroup3","pos": "85 420", "size": "260 200",
+                    "Chips":[
+                        {"key":"以太网112","text":"以太网","category":"Srio","group": "kil1111"},
+                        {"key":"以太网113","text":"以太网","category":"Srio","group": "kil1111"}] 
+                }]
+        },
+        {
+            "soltPosition":14,
+            "subtype":2,
+            "key":"zxy2",
+            "category":"test",
+            "text":"zxy",
+            "size": "420 650",
+            "Group":[
+                {
+                    "key":"killz2",
+                    "group":"zxy2",
+                    "category":"test",
+                    "pos":"0 0",
+                    "size":"420 450",
+                    "Chips":[
+                        {"key":"Chip21", "text":"Chip     FT1500","group": "killz2","category":"Rectangle","pos":"150 150","ribbon": "0" ,"ribbon1":"50","color":"green"}]
+                },
+                {
+                "key":"kil22",
+                "text":"功能刀片10-前面板",
+                "group":"zxy2",
+                "category":"OfGroup2",
+                "pos": "-33 380",
+                "size": "150 195",
+                "Chips":[
+                    {"key":"以太网21", "text":"以太网","category":"Srio","group": "kil22"},
+                    {"key":"UART21", "text":"UART","category":"ManualOperation","group": "kil22"}]
+                },
+                { "key": "kil222",  "text":"功能刀片10-后面板","group": "zxy2","category":"OfGroup3","pos": "85 420", "size": "260 200",
+                    "Chips":[
+                        {"key":"以太网211","text":"以太网","category":"Srio","group": "kil222"},
+                        {"key":"以太网221","text":"以太网","category":"Srio","group": "kil222"}] 
+                }]
+        }
+
+    
+    
+    ]
+        
+}

@@ -1,0 +1,155 @@
+<template>
+<div class="container">
+    <el-tabs v-model="activeName" type="card">
+        <el-tab-pane label="计算接口信息" name="first">
+            <el-col :span="16">
+                <el-row :gutter="20" class="mgb20">
+                    <el-col :span="12">
+                        <el-card shadow="hover" :body-style="{padding: '0px'}" style="height:450px;width:1500px;">
+                            <div slot="header" class="clearfix">
+                                <h3>收发包统计信息</h3>
+                            </div>
+                            <el-table :data="tableData" border style="width: 100%">
+                                <el-table-column prop="RocketIO" label="RocketIO"></el-table-column>
+                                <el-table-column prop="rx" label="收包总数"></el-table-column>
+                                <el-table-column prop="tx" label="发包总数"> </el-table-column>
+                                <el-table-column prop="drop" label="丢包总数"> </el-table-column>
+                            </el-table>
+                        </el-card>
+                    </el-col>
+                    <el-col :span="12">
+                        <el-card shadow="hover" :body-style="{padding: '0px'}" style="height:450px;width:1500px;">
+                            <div slot="header" class="clearfix">
+                                <h3>K码属性</h3>
+                            </div>
+                            <el-table :data="tableData" border style="width: 100%">
+                                <el-table-column prop="type" label="类型"></el-table-column>
+                                <el-table-column prop="K_Head" label="K码首部"></el-table-column>
+                                <el-table-column prop="K_tail" label="K码尾部"> </el-table-column>
+                            </el-table>
+                        </el-card>
+                    </el-col>
+                </el-row>
+
+                <el-row :gutter="20" class="mgb20">
+                    <el-col :span="12">
+                        <el-card shadow="hover" :body-style="{padding: '0px'}" style="height:450px;width:1500px;">
+                            <div slot="header" class="clearfix">
+                                <h3>RocketIO</h3>
+                            </div>
+                            <el-table :data="tableData" border style="width: 100%">
+                                <el-table-column prop="port" label="端口号"></el-table-column>
+                                <el-table-column prop="IdleCycle" label="IdleCycle"></el-table-column>
+                                <el-table-column prop="ByteOrder" label="字节序"> </el-table-column>
+                                <el-table-column prop="inputenable" label="输入使能"> </el-table-column>
+                                <el-table-column prop="outputenable" label="输出使能"> </el-table-column>
+                            </el-table>
+                        </el-card>
+                    </el-col>
+
+                </el-row>
+            </el-col>
+        </el-tab-pane>
+
+    </el-tabs>
+</div>
+</template>
+
+<script>
+export default {
+    data() {
+        return {
+            query: {
+                limit: 10,
+                pageIndex: 1,
+                pageSize: 10
+            },
+            pageTotal: 0,
+            activeName: 'first',
+            options: [{
+                value: 'enable',
+                label: 'enable'
+            }, {
+                value: 'disenable',
+                label: 'disenable'
+            }],
+            tableData: [{
+                port: 'eth0',
+                receive: '以太网',
+                receiveDiscard: '192.168.2.30',
+                receiveRetry: 1,
+                receiveBandwidth: 'disenable'
+            }, {
+                port: 'eth1',
+                receive: '以太网',
+                receiveDiscard: '192.168.3.30',
+                receiveRetry: 1,
+                receiveBandwidth: 'enable'
+            }, {
+                port: 'eth2',
+                receive: '以太网',
+                receiveDiscard: '192.168.4.30',
+                receiveRetry: 1,
+                receiveBandwidth: 'enable'
+            }, {
+                port: 'eth3',
+                receive: '以太网',
+                receiveDiscard: '192.168.5.30',
+                receiveRetry: 1,
+                receiveBandwidth: 'enable'
+            }],
+            rockiodata: [],
+            kma: []
+        }
+    },
+    methods: {
+        // 获取 easy-mock 的模拟数据
+        getData() {
+            this.$axios({
+                method: "post",
+                url: '/sys/device/status',
+                data: JSON.stringify({
+                    id: this.item.deviceId,
+                    isSub: true,
+                    keys: ['brt_rocketio_status']
+                }),
+                headers: {
+                    'Content-Type': "application/json"
+                },
+                withCredentials: true,
+            }).then(res => {
+                if (res.data.code == 0) {
+                    this.tableData = res.data.data.status.brt_rocketio_status.RxTx;
+                    this.kma = res.data.data.status.brt_rocketio_status.KCode;
+                    this.rockiodata = res.data.data.status.brt_rocketio_status.RocketIO;
+                    // this.query.pageTotal = res.data.page.total || 10; //1页数据
+                    // this.query.pageIndex = res.data.page.page; //当前页
+                    // this.query.pageSize = res.data.page.limit; //数据总数
+                } else {
+                    this.$message.error(res.data.msg);
+                }
+            }).catch(error => {
+                this.$message.error('获取数据失败！');
+            });
+        },
+        // 分页导航
+        // 每页显示的条数改变
+        changeSizeHandle(val) {
+            this.query.pageSize = val // 改变每页显示的条数 
+            this.query.pageIndex = 1 // 注意：在改变每页显示的条数时，要将页码显示到第一页
+            this.getData() // 点击每页显示的条数时，显示第一页
+            console.log(`每页 ${val} 条`)
+        },
+
+        // current-change用于监听页数改变，而内容也发生改变
+        currentChangeHandle(val) {
+            this.query.pageIndex = val // 改变默认的页数
+            this.getData() // 切换页码时，要获取每页显示的条数
+            console.log(`当前页: ${val}`)
+        }
+    },
+    mounted: function () {
+        this.getData();
+    }
+}
+</script>

@@ -1,0 +1,356 @@
+<template>
+<div>
+    <div class="filter-container">
+        <div class="letf-items" style="float: left; ">
+            <el-button @click="handleUpdatetrue"><i class="el-icon-success" style="font-size:12px;color:#00EC00;margin-right: 5px;"></i>确认</el-button>
+            <el-button @click="handleUpdatefalse"><i class="el-icon-remove" style="font-size:12px;color:#FF2D2D;margin-right: 5px;"></i>取消确认</el-button>
+            <el-button @click="handleclearflagtrue"><i class="el-icon-error" style="font-size:12px;color:#FF2D2D;margin-right: 5px;"></i>清除</el-button>
+            <el-button @click="exportExcel"><i class="el-icon-upload" style="font-size:12px;color:#0080FF;margin-right: 5px;"></i>导出</el-button>
+            <!-- <el-select v-model="query.address" placeholder="地址" class="handle-select mr10">
+                    <el-option key="1" label="广东省" value="广东省"></el-option>
+                    <el-option key="2" label="湖南省" value="湖南省"></el-option>
+                </el-select> -->
+        </div>
+        <div class="right-items" style="float: right;">
+            <span class="">级别：</span>
+            <el-select v-model="query.grade" placeholder="全部" class="handle-select ">
+                <el-option key="0" label="全部" value=""></el-option>
+                <el-option key="4" label="紧急" value="4"></el-option>
+                <el-option key="3" label="重要" value="3"></el-option>
+                <el-option key="2" label="次要" value="2"></el-option>
+                <el-option key="1" label="提示" value="1"></el-option>
+            </el-select>
+            &nbsp;
+            <el-button @click="handleSearch">
+                <i class="el-icon-search" style="font-size:12px;color:#0080FF;margin-right: 5px;"></i>
+                查询
+            </el-button>
+            &nbsp;
+            <el-select v-model="query.address" placeholder="高级查询" class="handle-select ">
+                <el-option key="1" label="广东省" value="广东省"></el-option>
+                <el-option key="2" label="湖南省" value="湖南省"></el-option>
+            </el-select>
+        </div>
+    </div>
+
+    <el-table :data="tableData1" border class="table" ref="multipleTable" header-cell-class-name="table-header" @selection-change="handleSelectionChange">
+        <el-table-column type="selection" width="55" align="center"></el-table-column>
+        <!--el-table-column prop="id" label="ID" width="55" align="center"></el-table-column-->
+        <el-table-column prop="grade" label="级别">
+            <template slot-scope="scope">
+                <i v-if="scope.row.grade===4" class="el-icon-error" style="color:#FF2D2D"></i>
+                <i v-if="scope.row.grade===3" class="el-icon-warning" style="color:#FF2D2D"></i>
+                <i v-if="scope.row.grade===2" class="el-icon-s-opportunity" style="color:#FFD306"></i>
+                <i v-if="scope.row.grade===1" class="el-icon-question" style="color:#0080FF"></i>
+                <span v-if="scope.row.grade===4">紧急</span>
+                <span v-if="scope.row.grade===3">重要</span>
+                <span v-if="scope.row.grade===2">次要</span>
+                <span v-if="scope.row.grade===1">提示</span>
+
+            </template>
+        </el-table-column>
+        <el-table-column prop="ackFlag" label="确认状态">
+            <template slot-scope="scope">
+                <span v-if="scope.row.ackFlag===false" style="color:#FF2D2D">未确认</span>
+                <span v-if="scope.row.ackFlag===true" style="color:#00EC00">已确认</span>
+            </template>
+        </el-table-column>
+
+        <el-table-column prop="clearFlag" label="清除状态">
+            <template slot-scope="scope">
+                <span v-if="scope.row.clearFlag===false" style="color:#FF2D2D">未清除</span>
+                <span v-if="scope.row.clearFlag===true" style="color:#00EC00">已清除</span>
+            </template>
+        </el-table-column>
+        <el-table-column prop="name" label="名称">
+            <template slot-scope="scope">
+                <span style="color:#0080FF">{{scope.row.name}}</span>
+            </template>
+        </el-table-column>
+        <el-table-column prop="number" label="次数">
+            <template slot-scope="scope">
+                <span style="color:#0080FF">{{scope.row.number}}</span>
+            </template>
+        </el-table-column>
+        <el-table-column prop="type" label="类型"></el-table-column>
+        <el-table-column prop="source" label="来源" width="250"></el-table-column>
+        <el-table-column prop="createTime" label="第一次产生时间" width="200"></el-table-column>
+        <el-table-column prop="editTime" label="最后一次产生时间" width="200">
+        </el-table-column>
+    </el-table>
+
+    <!--分页组件-->
+    <pagination :query1="query" />
+
+</div>
+</template>
+
+<script>
+import FileSaver from 'file-saver'
+import XLSX from 'xlsx'
+import pagination from '@/components/utils/pagination'
+export default {
+    components: {
+        pagination
+    },
+    data() {
+        return {
+            query: {
+                grade: '',
+                limit: 10,
+                pageIndex: 1,
+                pageSize: 10,
+                pageTotal: 0
+            },
+            tableData1: [],
+            multipleSelection: [],
+            delList: [],
+            editVisible: false,
+            addVisible: false,
+            pageTotal: 0,
+            form: {},
+            idx: -1,
+            id: -1,
+        };
+    },
+    mounted() {
+        this.getData();
+    },
+    methods: {
+        exportExcel() {
+            /* generate workbook object from table */
+            let wb = XLSX.utils.table_to_book(document.querySelector('.table'));
+            /* get binary string as output */
+            let wbout = XLSX.write(wb, {
+                bookType: 'xlsx',
+                bookSST: true,
+                type: 'array'
+            });
+            try {
+                FileSaver.saveAs(new Blob([wbout], {
+                    type: 'application/octet-stream'
+                }), '系统日志.xlsx');
+            } catch (e) {
+                if (typeof console !== 'undefined')
+                    console.log(e, wbout)
+            }
+            return wbout
+        },
+        // 获取 easy-mock 的模拟数据
+        getData() {
+            this.$axios({
+                method: "post",
+                url: '/sys/warn/listData',
+                data: JSON.stringify({
+                    page: this.query.pageIndex,
+                    limit: this.query.pageSize,
+                    grade: this.query.grade
+                }),
+                headers: {
+                    'Content-Type': "application/json"
+                },
+                withCredentials: true,
+            }).then(res => {
+                if (res.data.code == 0) {
+                    this.tableData1 = res.data.page.list;
+                    this.query.pageTotal = res.data.page.total || 10; //1页数据
+                    this.query.pageIndex = res.data.page.page; //当前页
+                    this.query.pageSize = res.data.page.limit; //数据总数
+                } else {
+                    this.$message.error(res.data.msg);
+                }
+            }).catch(error => {
+                this.$message.error('获取数据失败！');
+            });
+        },
+        // 触发搜索按钮
+        handleSearch() {
+            this.getData();
+        },
+        // 取消确认操作
+        handleUpdatefalse() {
+            const length = this.multipleSelection.length;
+            let str = [];
+            this.delList = this.delList.concat(this.multipleSelection);
+            //同时确认多个
+            for (let i = 0; i < this.delList.length; i++) {
+                str.push(this.delList[i].id + "");
+            }
+
+            this.$confirm('是否将确认状态修改为未确认？', '提示', {
+                    type: 'warning'
+                }).then(() => {
+                    this.ackflagUpdatefalse(str);
+                    this.multipleSelection = [];
+                })
+                .catch(() => {});
+        },
+        ackflagUpdatefalse(str) {
+            this.$axios({
+                method: "POST",
+                url: '/sys/warn/ackflag/false',
+                data: JSON.stringify(str),
+                // 设置请求头
+                headers: {
+                    'Content-Type': "application/json"
+                },
+                withCredentials: true, //跨域请求
+            }).then((res) => {
+                let data = res.data
+                if (data.code == 0) {
+                    this.$message.success('操作完成');
+                    this.getData(); //局部刷新表格               
+                } else {
+                    this.$message.error(data.msg || '操作失败')
+                }
+            }).catch((e) => {
+                this.$message.error(e)
+            });
+        },
+        // 已确认操作
+        handleUpdatetrue() {
+            const length = this.multipleSelection.length;
+            let str = [];
+            this.delList = this.delList.concat(this.multipleSelection);
+            //同时确认多个
+            for (let i = 0; i < this.delList.length; i++) {
+                str.push(this.delList[i].id + "");
+            }
+
+            this.$confirm('是否将确认状态修改为已确认？', '提示', {
+                    type: 'warning'
+                }).then(() => {
+                    this.ackflagUpdatetrue(str);
+                    this.multipleSelection = [];
+                })
+                .catch(() => {});
+        },
+        ackflagUpdatetrue(str) {
+            this.$axios({
+                method: "POST",
+                url: '/sys/warn/ackflag/true',
+                data: JSON.stringify(str),
+                // 设置请求头
+                headers: {
+                    'Content-Type': "application/json"
+                },
+                withCredentials: true, //跨域请求
+            }).then((res) => {
+                let data = res.data
+                if (data.code == 0) {
+                    this.$message.success('操作完成');
+                    this.getData(); //局部刷新表格               
+                } else {
+                    this.$message.error(data.msg || '操作失败')
+                }
+            }).catch((e) => {
+                this.$message.error(e)
+            });
+        },
+        // 已清除操作
+        handleclearflagtrue() {
+            const length = this.multipleSelection.length;
+            let str = [];
+            this.delList = this.delList.concat(this.multipleSelection);
+            //同时确认多个
+            for (let i = 0; i < this.delList.length; i++) {
+                str.push(this.delList[i].id + "");
+            }
+
+            this.$confirm('是否清除数据？', '提示', {
+                    type: 'warning'
+                }).then(() => {
+                    this.ackflagclearflagtrue(str);
+                    this.multipleSelection = [];
+                    // this.$message.success('删除成功');
+                    // this.tableData.splice(index, 1);
+                })
+                .catch(() => {});
+        },
+        ackflagclearflagtrue(str) {
+            this.$axios({
+                method: "POST",
+                url: '/sys/warn/clearflag/true',
+                data: JSON.stringify(str),
+                // 设置请求头
+                headers: {
+                    'Content-Type': "application/json"
+                },
+                withCredentials: true, //跨域请求
+            }).then((res) => {
+                let data = res.data
+                if (data.code == 0) {
+                    this.$message.success('操作完成');
+                    this.getData(); //局部刷新表格               
+                } else {
+                    this.$message.error(data.msg || '操作失败')
+                }
+            }).catch((e) => {
+                this.$message.error(e)
+            });
+        },
+
+        // 多选操作
+        handleSelectionChange(val) {
+            this.multipleSelection = val;
+        },
+        // delAllSelection() {
+        //     const length = this.multipleSelection.length;
+        //     let str = [];
+        //     this.delList = this.delList.concat(this.multipleSelection);
+
+        //     for (let i = 0; i < this.delList.length; i++) {
+        //         str.push(this.delList[i].id+"");               
+        //     }
+        //     console.log(str);
+        //     this.ackflagUpdate(str);
+        //     // for (let i = 0; i < length; i++) {
+        //     //     str += this.multipleSelection[i].name + ' ';
+
+        //     // }
+        //     // this.$message.error(`删除了${str}`);
+        //     this.multipleSelection = [];
+        // },
+    }
+}
+</script>
+
+<style scoped>
+.letf-items {
+    margin-bottom: 10px;
+}
+
+.right-items {
+    margin-bottom: 10px;
+}
+
+.handle-select {
+    width: 120px;
+}
+
+.handle-input {
+    width: 300px;
+    display: inline-block;
+}
+
+.table {
+    width: 100%;
+    font-size: 14px;
+
+}
+
+.red {
+    color: #ff0000;
+}
+
+.mr10 {
+    margin-right: 5px;
+}
+
+.table-td-thumb {
+    display: block;
+    margin: auto;
+    width: 40px;
+    height: 40px;
+}
+</style>

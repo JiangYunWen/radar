@@ -1,0 +1,219 @@
+<template>
+<div>
+    <div class="cont">
+        <div class="contsolt" v-for="solt in solts" :key="solt.deviceId">
+            <template v-if="solt.subtype===0">
+                <img src="../../assets/img/record.png" class="dy" />
+                <span style=" position: relative;left: 35%;bottom:100%">{{solt.slotPosition}}</span>
+                <span class="name1" v-if="solt.name.length<5">{{solt.name}}</span>
+                <span class="name" v-else>{{solt.name}}</span>
+            </template>
+            <template v-if="solt.subtype===5">
+                <img src="../../assets/img/other.png" class="dy" />
+                <span style=" position: relative;left: 35%;bottom:100%">{{solt.slotPosition}}</span>
+                <span class="name1" v-if="solt.name.length<5">{{solt.name}}</span>
+                <span class="name" v-else>{{solt.name}}</span>
+            </template>
+            <template v-else-if="solt.subtype===7">
+                <img src="../../assets/img/record.jpg" class="dy" />
+                <span style=" position: relative;left: 35%;bottom:100%">{{solt.slotPosition}}</span>
+                <span class="name1" v-if="solt.name.length<5">{{solt.name}}</span>
+                <span class="name" v-else>{{solt.name}}</span>
+            </template>
+            <template v-else>
+                <ul>
+                    <span style=" position: relative;left: 35%;">{{solt.slotPosition}}</span>
+                    <li> <span class="status">状态</span></li>
+                    <template v-if="solt.status">
+                        <el-checkbox-group class="moring" v-model="checkedCities" @change="handleCheckedCitiesChange">
+                            <el-checkbox :label="solt.deviceId" :key="solt.deviceId">
+                                <span hidden> {{solt.deviceId}}</span>
+                            </el-checkbox>
+                        </el-checkbox-group>
+                        <li><img src="../../assets/img/statustrue.jpg" class="image" /></li>
+
+                        <SoltStatus v-bind:showdata="{
+                    titlename:'CPU',titleclass:'cpu',msgclass:'bat fa fa-fw', showico:'fa-battery-',value:solt.status.brt_bmc_sys.cpurate}" v-if="solt.status.brt_bmc_sys.cpurate!==undefined">
+                        </SoltStatus>
+
+                        <SoltStatus v-bind:showdata="{
+                    titlename:'内存',titleclass:'memory',msgclass:'memorybat fa fa-fw', showico:'fa-battery-',value:solt.status.brt_bmc_sys.memRate}" v-if="solt.status.brt_bmc_sys.memRate!==undefined">
+                        </SoltStatus>
+
+                        <SoltStatus v-bind:showdata="{
+                    titlename:'SSD',titleclass:'ssd',msgclass:'ssdbat fa fa-fw', showico:'fa-battery-',value:solt.status.brt_bmc_sys.ssdRate}" v-if="!isNaN(solt.status.brt_bmc_sys.ssdRate)">
+                        </SoltStatus>
+                        <span class="name1" v-if="solt.name.length<5">{{solt.name}}</span>
+                        <span class="name" v-else>{{solt.name}}</span>
+                    </template>
+                    <template v-else>
+                        <img src="../../assets/img/statusfalse.jpg" class="image" />
+                        <span class="name1" v-if="solt.name.length<5">{{solt.name}}</span>
+                        <span class="name" v-else>{{solt.name}}</span>
+                    </template>
+                </ul>
+            </template>
+
+        </div>
+    </div>
+    <div class="filter-container">
+        <div class="letf-items" style="float: left; margin:10px 0%; position: relative;">
+            <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="handleCheckAllChange">全选</el-checkbox>
+        </div>
+        <div style="float: left; " class="center">
+            <div>
+                <el-button style="width:100px;" @click="Action(1)">开机</el-button>
+            </div>
+            <div>
+                <el-button style="width:100px;" @click="Action(2)">关机</el-button>
+            </div>
+            <div>
+                <el-button style="width:100px;" @click="Action(3)">重启</el-button>
+            </div>
+        </div>
+        <div class="right-items" style="float: right; margin:5px -10px; position: relative;" hidden>
+            <el-button>批量执行命令</el-button>
+        </div>
+    </div>
+</div>
+</template>
+
+<script>
+import SoltStatus from '@/components/SoltStatus'
+var list = [{
+    name: '',
+    status: '',
+    cpu: '',
+    memory: ''
+}];
+export default {
+    components: {
+        SoltStatus
+    },
+    props: ['msg'],
+    data() {
+        return {
+            msg: this.msg,
+            solts: [],
+            checkAll: false,
+            checkedCities: [],
+            cities: [],
+            isIndeterminate: false,
+            IpmiCmdEnum: [],
+            form: {
+                cmdid: 0,
+                ids: []
+            },
+            viewclass: 'bat fa fa-battery-0 fa-fw'
+        }
+    },
+    methods: {
+        msgTolist() {
+            var array = [];
+            for (var i = 0; i < 14; i++) {
+                array.push(list[0]);
+            }
+            if (this.msg == null) {
+                this.solts = array;
+                return;
+            }
+            for (var i = 0; i < this.msg.length; i++) {
+                if (this.msg[i].status.brt_bmc_sys != null) {
+                    this.msg[i].status.brt_bmc_sys['ssdRate'] = Math.round((this.msg[i].status.brt_bmc_sys.usedSSDSize / this.msg[i].status.brt_bmc_sys.ssdsize) * 100);
+                    this.cities[i] = this.msg[i].deviceId;
+                    array[this.msg[i].slotPosition - 1] = this.msg[i];
+                } else {
+                    array[this.msg[i].slotPosition - 1] = this.msg[i];
+                }
+            }
+            this.solts = array;
+
+        },
+        //全选
+        handleCheckAllChange(val) {
+            this.checkedCities = val ? this.cities : [];
+            this.isIndeterminate = false;
+        },
+        //单选及反选
+        handleCheckedCitiesChange(value) {
+            this.form.ids = value;
+            let checkedCount = value.length;
+            this.checkAll = checkedCount === this.cities.length;
+            this.isIndeterminate = checkedCount > 0 && checkedCount < this.cities.length;
+        },
+        IpmiCmd(cmd) {
+            this.$axios({
+                method: "POST",
+                url: '/sys/device/cmd/ipmi',
+                data: JSON.stringify(this.form),
+                headers: {
+                    'Content-Type': "application/json"
+                },
+                withCredentials: true,
+            }).then((res) => {
+                let data = res.data
+                if (data.code == 0) {
+                    this.$message.success('操作完成');
+                } else {
+                    this.$message.error(data.msg || '操作失败')
+                }
+                this.uploadLoading = false
+            }).catch((e) => {
+                this.uploadLoading = false
+                this.$message.error(e)
+            });
+        },
+        //命令
+        Action(cmd) {
+            this.$axios({
+                method: "get",
+                url: '/getData/getEnum?enumName=IpmiCmdEnum',
+                withCredentials: true,
+            }).then(res => {
+                if (res.data.code == 0) {
+                    this.IpmiCmdEnum = res.data.data;
+                    for (var i = 0; i < this.IpmiCmdEnum.length; i++) {
+                        if (this.IpmiCmdEnum[i].code === cmd) {
+                            this.form.cmdid = this.IpmiCmdEnum[i].code;
+                            this.IpmiCmd();
+                        }
+                    }
+
+                } else {
+                    this.$message.error(res.data.msg);
+                }
+            }).catch(error => {
+                this.$message.error('获取数据失败！');
+            });
+        }
+    },
+    //监听数据变化
+    watch: {
+        msg: {
+            handler(newVal) {
+                this.msgTolist();
+            },
+            deep: true
+        },
+    },
+    mounted: function () {
+        this.msgTolist();
+        //全选全不选
+        $("#checkAll").click(function () {
+            $('input[name="check"]').attr("checked", this.checked);
+        });
+        var $subBox = $("input[name='check']");
+        $subBox.click(function () {
+            $("#checkAll").attr("checked", $subBox.length == $("input[name='check']:checked").length ? true : false);
+        });
+
+        //反选*****
+    }
+}
+</script>
+
+<style>
+ul li {
+    list-style-type: none;
+}
+</style>

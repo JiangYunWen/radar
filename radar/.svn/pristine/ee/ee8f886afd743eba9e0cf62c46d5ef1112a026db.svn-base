@@ -1,0 +1,97 @@
+import Vue from 'vue';
+import App from './App.vue';
+import router from './router';
+import ElementUI from 'element-ui';
+import VueI18n from 'vue-i18n';
+import gojs from 'gojs';
+import axios from 'axios';
+import echarts from 'echarts';
+import $ from 'jquery';
+import layer from 'vue-layer'
+
+import staticMsg from './components/staticMsg'
+import drawLine from './components/echarts/line'
+import netLine from './components/echarts/netLine'
+import drawCircle from './components/echarts/circle'
+
+
+// import draw2d from 'draw2d';
+import { messages } from './components/common/i18n';
+// import 'element-ui/lib/theme-chalk/index.css'; // 默认主题
+import './assets/css/theme-green/index.css'; // 浅绿色主题
+import './assets/css/icon.css';
+import './components/common/directives';
+import 'babel-polyfill';
+import 'font-awesome/css/font-awesome.min.css'
+import './assets/css/checkbox.css';
+import 'ztree/js/jquery.ztree.core';
+import 'ztree/js/jquery.ztree.excheck';
+import 'ztree/css/metroStyle/metroStyle.css';
+import "./utils/Figures"
+
+Vue.prototype.go=gojs;
+Vue.prototype.$axios = axios;
+// axios.defaults.baseURL="http://127.0.0.1:8181";
+axios.defaults.baseURL="http://192.168.152.254:8080";
+// axios.defaults.baseURL="/"
+Vue.prototype.$echarts = echarts;
+Vue.prototype.$layer = layer(Vue);
+Vue.prototype.$ = $;
+// Vue.prototype.draw2d = draw2d;
+Vue.config.productionTip = false;
+Vue.use(VueI18n);
+
+Vue.use(staticMsg);
+Vue.use(drawLine);
+Vue.use(netLine);
+Vue.use(drawCircle);
+
+Vue.use(ElementUI, {
+    size: 'small'
+});
+const i18n = new VueI18n({
+    locale: 'zh',
+    messages
+});
+
+
+// 添加响应拦截器
+axios.interceptors.response.use(function (response) {
+    // 对响应数据做点什么
+    // console.log('response',response);
+    if(response.data.code==401){
+        this.$router.push({
+            path: '/login',
+        });
+    }
+    return response;
+  }, function (error) {
+    // 对响应错误做点什么
+    return Promise.reject(error);
+  });
+
+
+// 使用钩子函数对路由进行权限跳转
+// router.beforeEach((to, from, next) => {
+//     document.title = `${to.meta.title} | vue-manage-system`;
+//     const role = localStorage.getItem('ms_username');
+//     if (role===null) {
+//         next('/login');
+//     } else {
+//         // 简单的判断IE10及以下不进入富文本编辑器，该组件不兼容
+//         if (navigator.userAgent.indexOf('MSIE') > -1 && to.path === '/editor') {
+//             Vue.prototype.$alert('vue-quill-editor组件不兼容IE10及以下浏览器，请使用更高版本的浏览器查看', '浏览器不兼容通知', {
+//                 confirmButtonText: '确定'
+//             });
+//         } else {
+//             next();
+//         }
+//     }
+//   });
+
+
+new Vue({
+    router,
+    i18n,
+    render: h => h(App)
+}).$mount('#app');

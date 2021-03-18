@@ -1,0 +1,45 @@
+<template>
+<div class="container">
+    <CountSolt :item="item" v-if="this.subtype==1||this.subtype==2" />
+    <ExchangeSolt :item="item" v-if="this.subtype==3" />
+    <Exchangeapi :item="item" v-if="this.subtype==4" />
+</div>
+</template>
+
+<script>
+import CountSolt from '@/components/CountSolt'
+import ExchangeSolt from '@/components/ExchangeSolt'
+import Exchangeapi from '@/components/Exchangeapi'
+export default {
+    components: {
+        CountSolt,
+        ExchangeSolt,
+        Exchangeapi
+    },
+    inject: ['reload'],
+    data() {
+        return {
+            item: '',
+            subtype: ''
+        }
+    },
+    beforeRouteUpdate(to, from, next) {
+        next();
+        if (this.$route.query.item) {
+            this.item = this.$route.query.item;
+            this.subtype = this.$route.query.subtype;
+            console.log('this.item', this.item);
+        }
+
+    },
+    methods: {
+
+    },
+    created: function () {
+        // this.subtype=localStorage.getItem('subtype');
+        // this.item=localStorage.getItem('menuId');
+        this.item = this.$route.query.item;
+        this.subtype = this.$route.query.subtype
+    }
+}
+</script>

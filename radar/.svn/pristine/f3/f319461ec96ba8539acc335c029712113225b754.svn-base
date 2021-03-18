@@ -1,0 +1,17 @@
+import request from '../utils/request';
+
+export const fetchData = query => {
+    return request({
+        url: '/phy.json',
+        method: 'get',
+        params: query
+    });
+};
+
+export const logicData = query => {
+    return request({
+        url: '/logic.json',
+        method: 'get',
+        params: query
+    });
+};

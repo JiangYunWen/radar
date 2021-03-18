@@ -1,0 +1,422 @@
+<template>
+<div>
+    <div class="crumbs">
+        <el-breadcrumb separator="/">
+            <el-breadcrumb-item>
+                <i class="el-icon-lx-cascades"></i> 角色管理
+            </el-breadcrumb-item>
+        </el-breadcrumb>
+    </div>
+    <div class="container">
+        <div class="handle-box">
+            <el-button class="handle-add mr10" @click="addFile"><i class="el-icon-circle-plus" style="font-size:12px;color:#00EC00;margin-right: 5px;"></i>增加</el-button>
+            <el-input placeholder="角色名" v-model="query.roleName" class="handle-input mr10"></el-input>
+            <el-button @click="handleSearch"><i class="el-icon-search" style="font-size:12px;color:blue;margin-right: 5px;"></i>搜索</el-button>
+        </div>
+        <el-table :data="tableData1" border class="table" ref="multipleTable" header-cell-class-name="table-header" @selection-change="handleSelectionChange">
+            <el-table-column type="selection" width="55" align="center"></el-table-column>
+            <el-table-column prop="roleName" label="角色名称"></el-table-column>
+            <el-table-column prop="remark" label="备注" align="center">
+            </el-table-column>
+            <el-table-column prop="createTime" label="上传时间"></el-table-column>
+            <el-table-column prop="editTime" label="修改时间" align="center">
+            </el-table-column>
+
+            <el-table-column label="操作" width="180" align="center">
+                <template slot-scope="scope">
+                    <el-button type="text" icon="el-icon-edit" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
+                    <el-button type="text" icon="el-icon-delete" class="red" @click="handleDelete(scope.$index, scope.row)">删除</el-button>
+                </template>
+            </el-table-column>
+        </el-table>
+        <div class="pagination">
+            <el-pagination @size-change="changeSizeHandle" @current-change="currentChangeHandle" :current-page="query.pageIndex" layout="total, sizes, prev, pager, next, jumper" :total="pageTotal" background>
+            </el-pagination>
+        </div>
+    </div>
+
+    <!-- 编辑弹出框 -->
+    <el-dialog title="编辑用户" :visible.sync="editVisible" width="30%">
+        <div style="height:400px;" class="scrollbar">
+            <el-scrollbar style="height:100%">
+                <el-form ref="form" :model="form" label-width="100px" style="width: 300px; margin-left:50px;">
+                    <el-form-item label="角色名称">
+                        <el-input v-model="form.roleName"></el-input>
+                    </el-form-item>
+                    <el-form-item label="角色编码">
+                        <el-input v-model="form.remark"></el-input>
+                    </el-form-item>
+                    <el-form-item label="授权：">
+                        <ul id="menuTree" class="ztree"></ul>
+                    </el-form-item>
+                </el-form>
+            </el-scrollbar>
+        </div>
+        <span slot="footer" class="dialog-footer">
+            <el-button @click="editVisible = false">取 消</el-button>
+            <el-button type="primary" @click="saveEdit">确 定</el-button>
+        </span>
+    </el-dialog>
+
+    <!--用户增加弹出框-->
+    <el-dialog title="增加用户 " :visible.sync="addVisible" width="30%">
+        <div style="height:400px;" class="scrollbar">
+            <el-scrollbar style="height:100%">
+                <el-form ref="form" :model="role" label-width="100px" style="width: 300px; margin-left:50px;">
+                    <el-form-item label="角色名称">
+                        <el-input v-model="role.roleName"></el-input>
+                    </el-form-item>
+                    <el-form-item label="角色编码">
+                        <el-input v-model="role.remark"></el-input>
+                    </el-form-item>
+
+                    <el-form-item label="授权：">
+                        <ul id="menuTree" class="ztree"></ul>
+                    </el-form-item>
+
+                </el-form>
+            </el-scrollbar>
+        </div>
+        <span slot="footer" class="dialog-footer">
+            <el-button @click="addVisible = false">取 消</el-button>
+            <el-button type="primary" @click="saveAdd">确 定</el-button>
+        </span>
+    </el-dialog>
+
+</div>
+</template>
+
+<script>
+// import { fetchData } from '../../api/index';
+export default {
+    name: 'basetable',
+    data() {
+        return {
+            query: {
+                roleName: '',
+                limit: 10,
+                pageIndex: 1,
+                pageSize: 10
+            },
+            tableData1: [],
+            multipleSelection: [],
+            delList: [],
+            editVisible: false,
+            addVisible: false,
+            role: {
+                roleId: 0,
+                roleName: '',
+                remark: '',
+                menuIdList: []
+            },
+            pageTotal: 0,
+            form: {},
+            idx: -1,
+            id: -1,
+            ztree: '',
+            setting: {
+                data: {
+                    simpleData: {
+                        enable: true,
+                        idKey: "id",
+                        pIdKey: "pId",
+                        rootPId: -1
+                    },
+                    key: {
+                        url: "nourl"
+                    }
+                },
+                check: {
+                    enable: true,
+                    nocheckInherit: true
+                }
+            }
+        };
+
+    },
+    created() {
+        this.getData();
+
+    },
+    methods: {
+        checkTreeData() {
+            this.$axios({
+                method: "post",
+                url: '/sys/role/info/' + this.form.roleId,
+                headers: {
+                    'Content-Type': "application/json"
+                },
+                withCredentials: true,
+            }).then((res) => {
+                if (res.data.code === 0) {
+                    //勾选角色所拥有的菜单
+                    var menuIds = res.data.role.menuIdList;
+                    for (var i = 0; i < menuIds.length; i++) {
+                        var node = this.ztree.getNodeByParam("id", menuIds[i]);
+                        if (node != null) {
+                            this.ztree.checkNode(node, true, false);
+                        }
+                    }
+                }
+            }).catch((e) => {
+                this.$message.error(e)
+            });
+        },
+        getTreeData() {
+            this.$axios({
+                method: "get",
+                url: 'sys/menu/treePerms',
+                // headers: {
+                //     'Content-Type': "application/json"
+                //  },
+                withCredentials: true,
+            }).then((res) => {
+                let data = res.data;
+                if (data.code == 0) {
+                    this.ztree = $.fn.zTree.init($("#menuTree"), this.setting, data.data);
+                    //展开所有节点
+                    this.ztree.expandAll(true);
+                } else {
+                    this.$message.error(data.msg || '操作失败')
+                }
+            }).catch((e) => {
+                this.$message.error(e)
+            });
+        },
+        // 获取 easy-mock 的模拟数据
+        getData() {
+            this.$axios({
+                method: "post",
+                url: 'sys/role/listData',
+                data: JSON.stringify({
+                    page: this.query.pageIndex,
+                    limit: this.query.pageSize,
+                    roleName: this.query.roleName
+                }),
+                headers: {
+                    'Content-Type': "application/json"
+                },
+                withCredentials: true,
+            }).then(res => {
+                if (res.data.code == 0) {
+                    this.tableData1 = res.data.page.list;
+                    this.pageTotal = res.data.page.total || 10; //1页数据
+                    this.query.pageIndex = res.data.page.page; //当前页
+                    this.query.pageSize = res.data.page.limit; //数据总数
+                } else {
+                    this.$message.error(res.data.msg);
+                }
+            }).catch(error => {
+                this.$message.error('获取数据失败！');
+            });
+
+        },
+        // 触发搜索按钮
+        handleSearch() {
+            this.getData();
+        },
+        // 删除操作
+        handleDelete(index, row) {
+            this.id = row.userId;
+            console.log(this.id);
+            // 二次确认删除
+            this.$confirm('确定要删除吗？', '提示', {
+                type: 'warning'
+            }).then(() => {
+                this.saveDelete();
+            }).catch(() => {});
+        },
+        saveDelete() {
+            let ids = [];
+            ids.push(this.id + "");
+            console.log(ids);
+            this.$axios({
+                method: "post",
+                url: '/sys/user/delete',
+                data: JSON.stringify(ids),
+                // 设置请求头
+                headers: {
+                    'Content-Type': "application/json"
+                },
+                withCredentials: true, //跨域请求
+            }).then((res) => {
+                let data = res.data
+                if (data.code == 0) {
+                    this.$message.success('操作完成');
+                    this.getData(); //局部刷新表格               
+                } else {
+                    this.$message.error(data.msg || '操作失败')
+                }
+            }).catch((e) => {
+                this.$message.error(e)
+            });
+        },
+        // 多选操作
+        handleSelectionChange(val) {
+            this.multipleSelection = val;
+        },
+        delAllSelection() {
+            const length = this.multipleSelection.length;
+            let str = [];
+            this.delList = this.delList.concat(this.multipleSelection);
+
+            for (let i = 0; i < this.delList.length; i++) {
+                str.push(this.delList[i].id + "");
+            }
+            console.log(str);
+            this.saveDelete(str);
+            this.multipleSelection = [];
+        },
+        addFile() {
+            this.addVisible = true;
+            this.getTreeData();
+        },
+        saveAdd() {
+            this.addVisible = false;
+
+            //获取选择的菜单
+            var nodes = this.ztree.getCheckedNodes(true);
+            var menuIdList = new Array();
+            for (var i = 0; i < nodes.length; i++) {
+                menuIdList.push(nodes[i].id);
+            }
+            //向form表单中添加选中的菜单
+            this.role.menuIdList = menuIdList;
+
+            this.$axios({
+                method: "POST",
+                url: '/sys/role/save',
+                data: JSON.stringify(this.role),
+                headers: {
+                    'Content-Type': "application/json"
+                },
+                withCredentials: true,
+            }).then((res) => {
+                let data = res.data
+                if (data.code == 0) {
+                    this.$message.success('操作完成');
+                    this.getData(); //局部刷新表格               
+                } else {
+                    this.$message.error(data.msg || '操作失败')
+                }
+                this.uploadLoading = false
+            }).catch((e) => {
+                this.uploadLoading = false
+                this.$message.error(e)
+            });
+        },
+        // 编辑操作
+        handleEdit(index, row) {
+            this.form = row;
+
+            this.editVisible = true;
+            this.getTreeData();
+            this.checkTreeData();
+        },
+        // 保存编辑
+        saveEdit() {
+            this.editVisible = false;
+
+            //获取选择的菜单
+            var nodes = this.ztree.getCheckedNodes(true);
+            var menuIdList = new Array();
+            for (var i = 0; i < nodes.length; i++) {
+                menuIdList.push(nodes[i].id);
+            }
+            //向form表单中添加选中的菜单
+            this.form.menuIdList = menuIdList;
+            // 文件上传
+            this.$axios({
+                method: "POST",
+                url: '/sys/role/update',
+                data: JSON.stringify(this.form),
+                headers: {
+                    'Content-Type': "application/json"
+                },
+                withCredentials: true,
+            }).then((res) => {
+                let data = res.data
+                if (data.code == 0) {
+                    // this.$message.success('操作完成') ;
+                    // this.$message.success(`修改第 ${this.idx + 1} 行成功`);
+                    this.getData(); //局部刷新表格               
+                } else {
+                    this.$message.error(data.msg || '操作失败')
+                }
+            }).catch((e) => {
+                this.$message.error(e)
+            });
+        },
+        // 分页导航
+        // 每页显示的条数改变
+        changeSizeHandle(val) {
+            this.query.pageSize = val // 改变每页显示的条数 
+            this.query.pageIndex = 1 // 注意：在改变每页显示的条数时，要将页码显示到第一页
+            this.getData() // 点击每页显示的条数时，显示第一页
+            console.log(`每页 ${val} 条`)
+        },
+
+        // current-change用于监听页数改变，而内容也发生改变
+        currentChangeHandle(val) {
+            this.query.pageIndex = val // 改变默认的页数
+            this.getData() // 切换页码时，要获取每页显示的条数
+            console.log(`当前页: ${val}`)
+        }
+    }
+};
+</script>
+
+<style lang="less" scoped>
+.handle-box {
+    margin-bottom: 10px;
+}
+
+.handle-select {
+    width: 120px;
+}
+
+.handle-input {
+    width: 200px;
+    display: inline-block;
+}
+
+.table {
+    width: 100%;
+    font-size: 14px;
+}
+
+.red {
+    color: #ff0000;
+}
+
+.mr10 {
+    margin-right: 10px;
+}
+
+.table-td-thumb {
+    display: block;
+    margin: auto;
+    width: 40px;
+    height: 40px;
+}
+
+/deep/ .scrollbar {
+    white-space: nowrap;
+
+    /*强制一行显示（看需要）*/
+    .el-scrollbar {
+        display: flex;
+        justify-content: space-around;
+        padding: 0 0px;
+    }
+
+    /deep/ .el-scrollbar__wrap {
+        /* 必要的*/
+        overflow: scroll;
+        width: 110%;
+        /*隐藏侧边默认滚动条 （达不到效果可以自己试着微调） 如解决不了可尝试用 `margin-right -60px`*/
+        height: 110%;
+        /*隐藏底部滚动条  （100%如果达不到效果可以试着用110%）   */
+    }
+}
+</style>

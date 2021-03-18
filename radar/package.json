@@ -1,0 +1,51 @@
+{
+  "name": "vue-manage-system",
+  "version": "4.2.0",
+  "private": true,
+  "scripts": {
+    "dev": "npm run serve",
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build"
+  },
+  "dependencies": {
+    "axios": "^0.18.1",
+    "babel-polyfill": "^6.26.0",
+    "draw2d": "^1.0.37",
+    "echarts": "^4.8.0",
+    "element-ui": "^2.11.0",
+    "file-saver": "^2.0.2",
+    "font-awesome": "^4.7.0",
+    "gojs": "^2.1.17",
+    "iview": "^3.5.4",
+    "jquery": "^3.5.1",
+    "jquery-ui": "^1.12.1",
+    "jquery-ui-dist": "^1.12.1",
+    "jtopo-in-node": "^1.0.2",
+    "less-loader": "^6.2.0",
+    "lib-flexible": "^0.3.2",
+    "mavon-editor": "^2.6.17",
+    "node-gyp": "^7.0.0",
+    "raphael": "^2.3.0",
+    "sass": "^1.26.10",
+    "sass-loader": "^9.0.2",
+    "vue": "^2.6.10",
+    "vue-cropperjs": "^3.0.0",
+    "vue-i18n": "^8.10.0",
+    "vue-layer": "^1.2.0",
+    "vue-quill-editor": "^3.0.6",
+    "vue-router": "^3.0.3",
+    "vue-schart": "^2.0.0",
+    "vuedraggable": "^2.17.0",
+    "xlsx": "^0.16.2",
+    "xterm": "^4.8.1",
+    "ztree": "^3.5.24"
+  },
+  "devDependencies": {
+    "@vue/cli-plugin-babel": "^3.9.0",
+    "@vue/cli-service": "^3.9.0",
+    "gulp-sass": "^4.1.0",
+    "layui-layer": "^1.0.9",
+    "vue-template-compiler": "^2.6.10",
+    "webpack": "^4.43.0"
+  }
+}

@@ -1,0 +1,207 @@
+import Vue from 'vue';
+import Router from 'vue-router';
+
+
+Vue.use(Router);
+
+/**
+ * 解决ElementUI导航栏中的vue-router在3.0版本以上重复点菜单报错问题
+ */
+const originalPush = Router.prototype.push;
+Router.prototype.push = function push(location) {
+  return originalPush.call(this, location).catch(err => err)
+}
+
+import login from '@/components/Login';
+import user from '@/components/User';
+import role from '@/components/Role';
+import logs from '@/components/Logs';
+import systemLogs from '@/components/SystemLogs';
+import file from '@/components/File';
+import crate from '@/components/Crate';
+import solt from '@/components/Solt';
+import blades from '@/components/blades'
+import lowpower from '@/components/Lowpower';
+import exchangeSolt from '@/components/ExchangeSolt';
+import Exchangeapi from '@/components/Exchangeapi'
+import recordSolt from "@/components/recordSolt";
+import device from '@/components/Device';
+import deviceD from '@/components/DeviceD';
+import dashboard from '@/components/Dashboard';
+import Appliction from '@/components/Appliction';
+import ApplictionMonitor from '@/components/ApplicationMonitor';
+import Threshold from '@/components/Threshold';
+import Phytopo from '@/components/Phytopo';
+import LogicTopo from '@/components/LogicTopo';
+import apidocs from '@/components/apidoc';
+import DSPupload from '@/components/DSPupload';
+
+
+
+export default new Router({
+    routes: [
+        {
+            path: '/',
+            redirect: '/login'
+        },
+        {
+            path: '/',
+            component: () => import(/* webpackChunkName: "home" */ '../components/common/Home.vue'),
+            meta: { title: '自述文件' },
+            children: [
+                {
+                    path: '/dashboard',
+                    component: dashboard,
+                    meta: { title: '系统首页' }
+                },
+                {
+                    path: '/sys/user/device',
+                    component: device,
+                    meta: { title: '设备管理' }
+                },
+                {
+                    path: '/sys/file/list',
+                    component: file,
+                    meta: { title: '文件管理' }
+                },
+                {
+                    path: '/sys/user/list',
+                    component: user,
+                    meta: { title: '用户列表' }
+                },
+                {
+                    path: '/sys/role/list',
+                    component: role,
+                    meta: { title: '角色列表' }
+                },
+                {
+                    name:'solt',
+                    path: '/sys/menu/solt:menuId',
+                    component: solt,
+                    meta: { title: '计算模块' }
+                },
+                {
+                    name:'lowpower',
+                    path: '/sys/menu/lowpower:menuId',
+                    component: lowpower,
+                    meta: { title: '低功耗' }
+                },
+                {
+                    name:'blades',
+                    path: '/sys/menu/blades:menuId',
+                    component: blades,
+                    meta: { title: '其他刀片' }
+                },
+                {
+                    name:'exchangeSolt',
+                    path: '/sys/menu/exchangeSolt:menuId',
+                    component: exchangeSolt,
+                    meta: { title: '交换模块' }
+                },
+                {
+                    name:'exchangeapi',
+                    path: '/sys/menu/exchangeapi:menuId',
+                    component: Exchangeapi,
+                    meta: { title: '交换接口' }
+                },
+                {
+                    name:'recordSolt',
+                    path: '/sys/menu/recordSolt:menuId',
+                    component: recordSolt,
+                    meta: { title: '记录刀片' }
+                },
+                {
+                    // 平台日志
+                    path: '/sys/log/list',
+                    component: logs,
+                    meta: { title: '平台日志' }
+                },
+                {
+                    // 系统日志
+                    path: '/sys/log/systemlist',
+                    component: systemLogs,
+                    meta: { title: '系统警告' }
+                },
+                {
+                    // 应用分发
+                    path: '/platform/appman',
+                    component: Appliction,
+                    meta: { title: '应用分发' }
+                },
+                {
+                    // 应用监控信息
+                    path: '/platform/appinfo',
+                    component: ApplictionMonitor,
+                    meta: { title: '应用监控信息' }
+                },
+                {
+                    // 物理拓扑
+                    path: '/physicaltopo',
+                    component: Phytopo,
+                    meta: { title: '物理拓扑' }
+                },
+                {
+                    // 逻辑拓扑
+                    path: '/LogicTopo',
+                    component: LogicTopo,
+                    meta: { title: '逻辑拓扑' }
+                },
+                {
+                    // api接口文档
+                    path: '/apidocs',
+                    component: apidocs,
+                    meta: { title: 'api接口文档' }
+                },
+                {
+                    // DSP升级
+                    path: '/DSPupload',
+                    component: DSPupload,
+                    meta: { title: 'DSP升级' }
+                },
+                {
+                    // 机箱状态
+                    name:'deviceStatus',
+                    path: '/sys/menu/deviceStatus:menuId',
+                    component: deviceD,
+                    meta: { title: '机箱状态' }
+                },
+                {
+                    // 门限管理
+                    path: '/sys/threshold/list',
+                    component: Threshold,
+                    meta: { title: '门限管理' }
+                },
+                {
+                    // 权限页面
+                    path: '/permission',
+                    component: () => import(/* webpackChunkName: "permission" */ '../components/page/Permission.vue'),
+                    meta: { title: '权限测试', permission: true }
+                },
+                {
+                    path: '/404',
+                    component: () => import(/* webpackChunkName: "404" */ '../components/page/404.vue'),
+                    meta: { title: '404' }
+                },
+                {
+                    path: '/403',
+                    component: () => import(/* webpackChunkName: "403" */ '../components/page/403.vue'),
+                    meta: { title: '403' }
+                },
+                {
+                    path: '/crate',
+                    component: crate,
+                    meta: { title: '机箱配置' }
+                },
+            ]
+        },
+        {
+            path: '/login',
+            component: login,
+            meta: { title: '登录' }
+        },
+        {
+            path: '*',
+            redirect: '/404'
+        }
+    ]
+});

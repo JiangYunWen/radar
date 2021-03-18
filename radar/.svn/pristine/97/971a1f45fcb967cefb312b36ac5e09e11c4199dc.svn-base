@@ -1,0 +1,17 @@
+import request from '../utils/request';
+
+export const fetchData = query => {
+    return request({
+        url: '/phy.json?t='+Math.random(),
+        method: 'get',
+        params: query
+    });
+};
+
+export const logicData = query => {
+    return request({
+        url: '/logic.json?t='+Math.random(),
+        method: 'get',
+        params: query
+    });
+};

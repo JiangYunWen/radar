@@ -1,0 +1,316 @@
+<template>
+  <div class="container">
+    <el-tabs v-model="activeName" type="card">
+      <el-tab-pane label="机箱状态" name="first">
+        <el-col :span="23">
+          <el-row :gutter="16" class="mgb20">
+            <el-col :span="24">
+              <el-card
+                shadow="hover"
+                :body-style="{ padding: '0px' }"
+                style="height: 450px; width: 100%"
+              >
+                <div slot="header" class="clearfix">
+                  <span>风扇转速</span>
+                </div>
+                <div id="myChart" :style="{ width: '100%', height: '350px' }"></div>
+              </el-card>
+            </el-col>
+          </el-row>
+          <el-row :gutter="20" class="mgb20">
+            <el-col :span="24">
+              <el-card
+                shadow="hover"
+                :body-style="{ padding: '0px' }"
+                style="height: 450px; width: 100%"
+              >
+                <div slot="header" class="clearfix">
+                  <span>机箱温度</span>
+                </div>
+                <div id="myChart2" :style="{ width: '100%', height: '350px' }"></div>
+              </el-card>
+            </el-col>
+          </el-row>
+        </el-col>
+      </el-tab-pane>
+    </el-tabs>
+
+    <div id="T" style="width: 90%; margin: 10px" hidden>
+      <div>保护温度: <el-input v-model="protectT" style="width: 150px"></el-input></div>
+      <br />
+      <div>报警温度: <el-input v-model="warnT" style="width: 150px"></el-input></div>
+    </div>
+  </div>
+</template>
+
+<script>
+import { fetchData } from "../../api/index";
+import layer from "layui-layer";
+let myChartfan = "";
+let myChartji = "";
+export default {
+  data() {
+    return {
+      activeName: "first",
+      protectT: "",
+      warnT: "",
+      series_data: [],
+      legend_names: [],
+      fan_data: [],
+      fan_names: [],
+      deviceId: this.deviceId,
+    };
+  },
+  methods: {
+    click() {
+      myChartji.setOption({
+        toolbox: {
+          show: true,
+          feature: {
+            //敲黑板，重点！！！
+            myTool2: {
+              //自定义按钮 danielinbiti,这里增加，selfbuttons可以随便取名字   以my开头
+              show: true, //是否显示
+              title: "设定阀值", //鼠标移动上去显示的文字
+              icon:
+                "path://M525.4 721.2H330.9c-9 0-18.5-7.7-18.5-18.1V311c0-9 9.3-18.1 18.5-18.1h336.6c9.3 0 18.5 9.1 18.5 18.1v232.7c0 6 8.8 12.1 15 12.1 6.2 0 15-6 15-12.1V311c0-25.6-25.3-48.9-50.1-48.9h-335c-26.2 0-50.1 23.3-50.1 48.9v389.1c0 36.3 20 51.5 50.1 51.5h197.6c6.2 0 9.3-7.5 9.3-15.1 0-6-6.2-15.3-12.4-15.3zM378.8 580.6c-6.2 0-12.3 8.6-12.3 14.6s6.2 14.6 12.3 14.6h141.4c6.2 0 12.3-5.8 12.3-13.4 0.3-9.5-6.2-15.9-12.3-15.9H378.8z m251.6-91.2c0-6-6.2-14.6-12.3-14.6H375.7c-6.2 0-12.4 8.6-12.4 14.6s6.2 14.6 12.4 14.6h240.8c6.2 0.1 13.9-8.5 13.9-14.6z m-9.2-120.5H378.8c-6.2 0-12.3 8.6-12.3 14.6s6.2 14.6 12.3 14.6h240.8c7.7 0 13.9-8.6 13.9-14.6s-6.2-14.6-12.3-14.6z m119.4 376.6L709 714.1c9.2-12 14.6-27 14.6-43.2 0-39.4-32.1-71.4-71.8-71.4-39.7 0-71.8 32-71.8 71.4s32.1 71.4 71.8 71.4c16.3 0 31.3-5.4 43.4-14.5l31.6 31.5c3.8 3.8 10 3.8 13.8 0 3.8-3.8 3.8-10 0-13.8z m-88.8-23.6c-28.3 0-51.3-22.8-51.3-51s23-51 51.3-51c28.3 0 51.3 22.8 51.3 51s-23 51-51.3 51z", //图标
+              onclick: function () {
+                //点击事件,这里的option1是chart的option信息
+                //页面层-自定义
+                layer.open({
+                  title: "设置阀值",
+                  type: 1,
+                  area: ["300px"],
+                  content: $("#T"),
+                  btn: ["确认"],
+                  yes: function (index, layero) {
+                    layer.close(index); //如果设定了yes回调，需进行手工关闭
+                  },
+                });
+              },
+            },
+          },
+        },
+      });
+    },
+    drawLine() {
+      // 基于准备好的dom，初始化echarts实例
+      myChartfan = this.$echarts.init(document.getElementById("myChart"));
+      myChartfan.setOption({
+        title: {
+          text: "风扇转速",
+          subtext: "",
+          left: "center",
+        },
+        tooltip: {
+          trigger: "axis",
+          axisPointer: {
+            type: "cross",
+          },
+        },
+        legend: {
+          data: ["风扇1", "风扇2", "风扇3"],
+          bottom: 0,
+        },
+        toolbox: {
+          show: true,
+          feature: {
+            mark: { show: true },
+            dataView: { show: true, readOnly: false },
+            magicType: { show: true, type: ["line", "bar", "stack", "tiled"] },
+            restore: { show: true },
+            saveAsImage: { show: true },
+          },
+        },
+        calculable: true,
+        xAxis: [
+          {
+            type: "category",
+            boundaryGap: false,
+            data: [],
+          },
+        ],
+        yAxis: [
+          {
+            type: "value",
+            axisLabel: {
+              formatter: function (param) {
+                return param / 1000 + "k";
+              },
+            },
+          },
+        ],
+        series: [],
+      });
+    },
+    drawDevice() {
+      myChartji = this.$echarts.init(document.getElementById("myChart2"));
+      myChartji.setOption({
+        title: {
+          text: "机箱温度",
+          subtext: "",
+          left: "center",
+        },
+        tooltip: {
+          trigger: "axis",
+        },
+        legend: {
+          data: ["进风口温度", "出风口温度"],
+          bottom: 0,
+        },
+        toolbox: {
+          show: true,
+          feature: {
+            mark: { show: true },
+            dataView: { show: true, readOnly: false },
+            magicType: { show: true, type: ["line", "bar"] },
+            restore: { show: true },
+            saveAsImage: { show: true },
+          },
+        },
+        calculable: true,
+        xAxis: [
+          {
+            type: "category",
+            boundaryGap: false,
+            data: [],
+          },
+        ],
+        yAxis: [
+          {
+            type: "value",
+            axisLabel: {
+              formatter: "{value} °C",
+            },
+            max: 200,
+            min: 0,
+          },
+        ],
+        series: [],
+      });
+    },
+    getRate() {
+      console.log("deviceId", this.$route.params.menuId);
+      this.legend_names = [];
+      this.series_data = [];
+      this.$axios({
+        method: "post",
+        url: "sys/device/status",
+        data: JSON.stringify({
+          id: this.$route.params.menuId,
+          isSub: true,
+          keys: ["cht_tem"],
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      }).then((res) => {
+        if (res.data.code == 0) {
+          for (var key in res.data.data.status.cht_tem.series) {
+            this.legend_names.push(key);
+            var swpdata = {};
+            swpdata["name"] = key;
+            swpdata["type"] = "line";
+            swpdata["data"] = res.data.data.status.cht_tem.series[key];
+            this.series_data.push(swpdata);
+          }
+          // this.legend_names.shift();
+          // this.series_data.shift();
+          // res.data.data.status.cht_tem.times.shift();
+          myChartji = this.$echarts.init(document.getElementById("myChart2"));
+          myChartji.setOption({
+            legend: {
+              data: this.legend_names,
+              bottom: 0,
+            },
+            xAxis: {
+              data: res.data.data.status.cht_tem.times,
+            },
+            series: this.series_data,
+          });
+        }
+      });
+    },
+    getfan() {
+      this.fan_names = [];
+      this.fan_data = [];
+      this.$axios({
+        method: "post",
+        url: "sys/device/status",
+        data: JSON.stringify({
+          id: this.$route.params.menuId,
+          isSub: true,
+          keys: ["cht_fan"],
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      }).then((res) => {
+        if (res.data.code == 0) {
+          for (var key in res.data.data.status.cht_fan.series) {
+            this.fan_names.push(key);
+            var swpdata = {};
+            swpdata["name"] = key;
+            swpdata["type"] = "line";
+            swpdata["data"] = res.data.data.status.cht_fan.series[key];
+
+            // swpdata['id']=1;
+
+            swpdata["show"] = true;
+            swpdata["smooth"] = true;
+            swpdata["itemStyle"] = {};
+            // swpdata['itemStyle']['shadowColor']='rgba(0,0,0,0)';
+            // swpdata['itemStyle']['shadowBlur']=5;
+            // swpdata['itemStyle']['shadowOffsetX']=3;
+            // swpdata['itemStyle']['shadowOffsetY']=3;
+            swpdata["itemStyle"]["normal"] = {};
+            swpdata["itemStyle"]["normal"]["areaStyle"] = {};
+            swpdata["itemStyle"]["normal"]["areaStyle"]["type"] = "default";
+
+            this.fan_data.push(swpdata);
+          }
+          console.log("fan_data", this.fan_data);
+          // this.legend_names.shift();
+          // this.series_data.shift();
+          // res.data.data.status.cht_tem.times.shift();
+          myChartfan = this.$echarts.init(document.getElementById("myChart"), "light");
+          myChartfan.setOption({
+            legend: {
+              data: this.fan_names,
+              bottom: 0,
+            },
+            xAxis: {
+              data: res.data.data.status.cht_fan.times,
+            },
+            series: this.fan_data,
+          });
+        }
+      });
+    },
+    handleClose(done) {
+      this.$confirm("确认关闭？")
+        .then((_) => {
+          done();
+        })
+        .catch((_) => {});
+    },
+  },
+  mounted: function () {
+    this.drawDevice();
+    this.drawLine();
+    this.click();
+    const timer = setInterval(() => {
+      this.getRate();
+      this.getfan();
+      // 某些定时器操作
+    }, 1000);
+    // 通过$once来监听定时器，在beforeDestroy钩子可以被清除。
+    this.$once("hook:beforeDestroy", () => {
+      clearInterval(timer);
+    });
+  },
+};
+</script>
+<style></style>
